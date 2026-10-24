@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="NSA placeholder emblem">
+  <rect width="120" height="120" fill="#ffffff"/>
+  <path d="M8 34H112V48H8Z" fill="#d71920"/>
+  <path d="M8 48H112V65H8Z" fill="#fcd116"/>
+  <path d="M8 65H112V79H8Z" fill="#006b3f"/>
+  <circle cx="60" cy="55" r="25" fill="#101820" stroke="#ffffff" stroke-width="2"/>
+  <text x="60" y="53" font-family="Arial,sans-serif" font-size="22" font-weight="900" fill="#ffffff" text-anchor="middle">NSA</text>
+  <text x="60" y="66" font-family="Arial,sans-serif" font-size="7" font-weight="700" fill="#fcd116" text-anchor="middle">WAWM</text>
+  <text x="60" y="101" font-family="Arial,sans-serif" font-size="8" font-weight="700" fill="#006b3f" text-anchor="middle">LOGO PLACEHOLDER</text>
+</svg>
