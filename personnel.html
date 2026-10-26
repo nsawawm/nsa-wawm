@@ -9,7 +9,7 @@
   <meta name="theme-color" content="#006b3f">
   <meta name="description" content="NSA WAWM personnel registration">
   <title>NSA Personnel Registration | WAWM</title>
-  <link rel="icon" href="./assets/nsa-logo-placeholder.svg" type="image/svg+xml">
+  <link rel="icon" href="./assets/my_logo.png" type="image/png">
   <style>
     :root{
       --green:#006b3f;--deep:#005632;--bright:#22c96b;--gold:#ffdc00;
@@ -58,6 +58,7 @@
     .section-card{min-width:0;padding:19px;border:1px solid var(--line);border-radius:15px;background:#fff;box-shadow:0 5px 18px rgba(0,63,38,.025)}
     .section-heading{display:flex;align-items:center;gap:10px;margin:0 0 16px;color:#163e30;font-size:15px;font-weight:850}
     .section-icon{display:grid;place-items:center;width:32px;height:32px;flex:0 0 32px;border-radius:50%;background:#e1f6eb;color:var(--green);font-size:16px}
+    .section-icon-svg{width:17px;height:17px;display:block;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
     .section-note{margin:-7px 0 15px;color:var(--muted);font-size:11px;line-height:1.5}
     .profile-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
     .info-card{min-width:0;padding:12px;border:1px solid #e7f0eb;border-radius:10px;background:#f8fbf9}
@@ -142,7 +143,7 @@
   <main class="portal">
     <header class="portal-header">
       <a class="brand-logo" href="./index.html" aria-label="NSA WAWM home">
-        <img src="./assets/nsa-logo-placeholder.svg" alt="National Service Authority logo" width="72" height="72">
+        <img src="./assets/my_logo.png" alt="National Service Authority logo" width="72" height="72">
       </a>
       <div class="brand-copy">
         <p class="brand-kicker">National Service Authority</p>
@@ -150,7 +151,7 @@
         <p class="brand-subtitle">Wassa Amenfi West Municipal Secretariat · Officer Portal</p>
       </div>
       <div class="header-actions">
-        <button class="header-button" id="homeButton" type="button"><span aria-hidden="true">←</span> Home</button>
+        <button class="header-button" id="homeButton" type="button"><span aria-hidden="true">&#8592;</span> Home</button>
       </div>
     </header>
 
@@ -170,7 +171,7 @@
       <div class="form-layout">
         <div class="form-main">
           <section class="section-card" aria-labelledby="profileHeading">
-            <h3 class="section-heading" id="profileHeading"><span class="section-icon" aria-hidden="true">♙</span>Personnel Profile</h3>
+            <h3 class="section-heading" id="profileHeading"><span class="section-icon" aria-hidden="true"><svg class="section-icon-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.2"/><path d="M5.5 20c.7-4 2.9-6 6.5-6s5.8 2 6.5 6"/></svg></span>Personnel Profile</h3>
             <p class="section-note">These details are loaded from the official personnel master record.</p>
             <div id="masterInfo" class="profile-grid">
               <div class="info-card"><span>Personnel record</span><strong>Loading information…</strong></div>
@@ -178,7 +179,7 @@
           </section>
 
           <section class="section-card" aria-labelledby="personalHeading">
-            <h3 class="section-heading" id="personalHeading"><span class="section-icon" aria-hidden="true">♧</span>Personal Information</h3>
+            <h3 class="section-heading" id="personalHeading"><span class="section-icon" aria-hidden="true"><svg class="section-icon-svg" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3.5" width="14" height="17" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span>Personal Information</h3>
             <div class="form-grid">
               <div class="form-group">
                 <label for="dateOfBirth">Date of Birth <span class="required">*</span></label>
@@ -188,7 +189,7 @@
           </section>
 
           <section class="section-card" aria-labelledby="contactHeading">
-            <h3 class="section-heading" id="contactHeading"><span class="section-icon" aria-hidden="true">☎</span>Contact Information</h3>
+            <h3 class="section-heading" id="contactHeading"><span class="section-icon" aria-hidden="true"><svg class="section-icon-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.3 4.5h3l1.4 3.6-2 1.7a13.5 13.5 0 0 0 4.5 4.5l1.7-2 3.6 1.4v3c0 1-0.8 1.8-1.8 1.8C11.1 18.5 5.5 12.9 5.5 5.3c0-1 .8-1.8 1.8-1.8Z"/></svg></span>Contact Information</h3>
             <div class="form-grid">
               <div class="form-group">
                 <label for="phone">Phone Number</label>
@@ -206,7 +207,7 @@
           </section>
 
           <section class="section-card" aria-labelledby="addressHeading">
-            <h3 class="section-heading" id="addressHeading"><span class="section-icon" aria-hidden="true">⌂</span>Residential Information</h3>
+            <h3 class="section-heading" id="addressHeading"><span class="section-icon" aria-hidden="true"><svg class="section-icon-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="m4 10 8-6 8 6"/><path d="M6 9.5V20h12V9.5M10 20v-6h4v6"/></svg></span>Residential Information</h3>
             <div class="form-group">
               <label for="address">Residential Address</label>
               <textarea class="field" id="address" name="address" placeholder="Enter your residential address" rows="4" autocomplete="street-address"></textarea>
@@ -214,7 +215,7 @@
           </section>
 
           <section class="section-card" aria-labelledby="kinHeading">
-            <h3 class="section-heading" id="kinHeading"><span class="section-icon" aria-hidden="true">♡</span>Next of Kin</h3>
+            <h3 class="section-heading" id="kinHeading"><span class="section-icon" aria-hidden="true"><svg class="section-icon-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="2.5"/><circle cx="16" cy="9" r="2.2"/><path d="M4.5 19c.4-3.3 2-5 4.5-5s4.1 1.7 4.5 5M13 19c.3-2.4 1.5-3.7 3.5-3.7 1.7 0 2.7 1 3 3.7"/></svg></span>Next of Kin</h3>
             <div class="form-grid">
               <div class="form-group">
                 <label for="kinName">Full Name</label>
@@ -234,7 +235,7 @@
 
         <aside class="form-side">
           <section class="section-card" aria-labelledby="photoHeading">
-            <h3 class="section-heading" id="photoHeading"><span class="section-icon" aria-hidden="true">▣</span>Passport Photograph</h3>
+            <h3 class="section-heading" id="photoHeading"><span class="section-icon" aria-hidden="true"><svg class="section-icon-svg" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="6.5" width="16" height="12" rx="2"/><path d="m8 6.5 1.2-2h5.6l1.2 2"/><circle cx="12" cy="12.5" r="3.2"/></svg></span>Passport Photograph</h3>
             <p class="section-note">Take a new passport photo with your camera or upload an existing image. Review the preview before submitting.</p>
             <div class="photo-panel">
               <div class="photo-frame" id="photoFrame">
@@ -242,7 +243,7 @@
                 <img id="preview" alt="Passport photograph preview" hidden>
               </div>
               <div class="photo-actions">
-                <button class="button button-primary" id="openCameraButton" type="button">▣ Open Camera</button>
+                <button class="button button-primary" id="openCameraButton" type="button">&#9635; Open Camera</button>
                 <p>The camera opens in a new tab. Take the photo and select “Use This Photo”.</p>
               </div>
             </div>
@@ -254,7 +255,7 @@
           </section>
 
           <section class="section-card" aria-labelledby="verificationHeading">
-            <h3 class="section-heading" id="verificationHeading"><span class="section-icon" aria-hidden="true">✓</span>Regional Verification</h3>
+            <h3 class="section-heading" id="verificationHeading"><span class="section-icon" aria-hidden="true"><svg class="section-icon-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.2 4.2L19 7"/></svg></span>Regional Verification</h3>
             <div class="form-group">
               <label for="verificationDate">Regional Verification Date</label>
               <input class="field" type="date" id="verificationDate" name="verificationDate">
@@ -262,7 +263,7 @@
           </section>
 
           <section class="section-card" id="employmentDetails" aria-labelledby="employmentHeading">
-            <h3 class="section-heading" id="employmentHeading"><span class="section-icon" aria-hidden="true">▤</span>Employment Information</h3>
+            <h3 class="section-heading" id="employmentHeading"><span class="section-icon" aria-hidden="true"><svg class="section-icon-svg" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="7" width="16" height="12" rx="2"/><path d="M9 7V5h6v2M4 11h16M10 11v2h4v-2"/></svg></span>Employment Information</h3>
             <p class="section-note">Complete these fields if they apply to your placement.</p>
             <div class="form-grid">
               <div class="form-group full">
@@ -277,7 +278,7 @@
           </section>
 
           <div class="form-actions">
-            <button class="button submit-button" id="submitButton" type="submit">Complete Registration <span aria-hidden="true">→</span></button>
+            <button class="button submit-button" id="submitButton" type="submit">Complete Registration <span aria-hidden="true">&#8594;</span></button>
             <button class="button secondary-button" id="cancelButton" type="button">Return to Home</button>
             <p class="help-copy">Your registration is submitted securely for processing. Do not close this page while submission is in progress.</p>
             <p class="message" id="pageMessage" role="status" aria-live="polite"></p>
@@ -627,7 +628,7 @@
         state.submitting = false;
         if (!state.completed) {
           $("submitButton").disabled = false;
-          $("submitButton").innerHTML = 'Complete Registration <span aria-hidden="true">→</span>';
+          $("submitButton").innerHTML = 'Complete Registration <span aria-hidden="true">&#8594;</span>';
         }
       }
     }

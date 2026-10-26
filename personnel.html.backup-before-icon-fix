@@ -1,0 +1,649 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+<script src="./assets/config.js"></script>
+<script src="./assets/apps-script-bridge.js"></script>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#006b3f">
+  <meta name="description" content="NSA WAWM personnel registration">
+  <title>NSA Personnel Registration | WAWM</title>
+  <link rel="icon" href="./assets/my_logo.png" type="image/svg+xml">
+  <style>
+    :root{
+      --green:#006b3f;--deep:#005632;--bright:#22c96b;--gold:#ffdc00;
+      --paper:#f5faf7;--ink:#143f30;--muted:#60736b;--line:#d9e9e1;
+      --danger:#9a2424;--shadow:0 14px 38px rgba(0,45,27,.12)
+    }
+    *{box-sizing:border-box}
+    html{min-height:100%;scroll-behavior:smooth}
+    body{
+      margin:0;min-height:100vh;min-height:100svh;display:flex;flex-direction:column;
+      padding:0 22px;color:var(--ink);font-family:Inter,Roboto,"Segoe UI",Arial,sans-serif;
+      background:linear-gradient(135deg,transparent 0 48%,rgba(34,201,107,.92) 48% 68%,transparent 68%),
+      linear-gradient(135deg,#005a37 0%,#006c43 54%,#005632 100%);background-attachment:fixed
+    }
+    input,textarea,button{font:inherit}
+    button{cursor:pointer}
+    input:focus-visible,textarea:focus-visible,button:focus-visible{outline:3px solid rgba(255,220,0,.9);outline-offset:2px}
+    [hidden]{display:none!important}
+    .portal{width:min(1120px,100%);margin:20px auto 18px;overflow:hidden;border-radius:17px;background:var(--paper);box-shadow:var(--shadow)}
+    .portal-header{
+      position:relative;isolation:isolate;display:flex;align-items:center;gap:17px;
+      min-height:126px;padding:23px 28px;color:#fff;
+      background:radial-gradient(circle at 0 0,rgba(255,255,255,.1) 0 18%,transparent 18.2%),
+      linear-gradient(115deg,#25c96c,#20c665 75%,#28c96b)
+    }
+    .portal-header:after{content:"";position:absolute;z-index:-1;width:250px;height:250px;right:-155px;bottom:-195px;border:1px solid rgba(255,255,255,.17);border-radius:50%;box-shadow:0 0 0 28px rgba(255,255,255,.035),0 0 0 56px rgba(255,255,255,.025)}
+    .brand-logo{display:grid;place-items:center;width:72px;height:72px;flex:0 0 72px;overflow:hidden;border-radius:5px;background:#fff;box-shadow:0 5px 14px rgba(0,45,25,.12)}
+    .brand-logo img{display:block;width:100%;height:100%;padding:5px;object-fit:contain}
+    .brand-copy{min-width:0}.brand-kicker{margin:0 0 5px;font-size:10px;font-weight:900;letter-spacing:1.6px;text-transform:uppercase}
+    .brand-title{margin:0;color:#fff;font-size:clamp(24px,3vw,32px);line-height:1.12;letter-spacing:-.6px;font-weight:850}
+    .brand-subtitle{margin:7px 0 0;color:rgba(255,255,255,.96);font-size:12px;line-height:1.45}
+    .header-actions{margin-left:auto;align-self:flex-start;display:flex;gap:8px}
+    .header-button{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:36px;padding:0 14px;border:1px solid rgba(255,255,255,.7);border-radius:999px;background:rgba(0,94,53,.08);color:#fff;font-size:10px;font-weight:900;letter-spacing:.5px;text-transform:uppercase;white-space:nowrap}
+    .header-button:hover{background:rgba(0,74,43,.18)}
+    .progress-strip{display:flex;align-items:center;gap:12px;padding:13px 28px;background:#fff;border-bottom:1px solid var(--line)}
+    .progress-label{font-size:11px;color:var(--muted);font-weight:800}
+    .progress-track{height:6px;flex:1;overflow:hidden;border-radius:999px;background:#e5eee9}
+    .progress-fill{width:100%;height:100%;border-radius:inherit;background:var(--green)}
+    .progress-step{padding:5px 10px;border-radius:999px;background:#e6f8ee;color:var(--green);font-size:10px;font-weight:900;white-space:nowrap}
+    .page-intro{padding:25px 28px 7px}
+    .section-kicker{margin:0 0 8px;color:var(--green);font-size:10px;font-weight:900;letter-spacing:1.6px;text-transform:uppercase}
+    .page-title{margin:0;color:var(--ink);font-size:clamp(23px,2.5vw,30px);line-height:1.18;letter-spacing:-.5px;font-weight:850}
+    .page-description{max-width:760px;margin:9px 0 0;color:var(--muted);font-size:12px;line-height:1.65}
+    .form-layout{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(300px,.8fr);gap:16px;padding:18px 28px 28px;align-items:start}
+    .form-main,.form-side{display:grid;gap:15px;min-width:0}
+    .section-card{min-width:0;padding:19px;border:1px solid var(--line);border-radius:15px;background:#fff;box-shadow:0 5px 18px rgba(0,63,38,.025)}
+    .section-heading{display:flex;align-items:center;gap:10px;margin:0 0 16px;color:#163e30;font-size:15px;font-weight:850}
+    .section-icon{display:grid;place-items:center;width:32px;height:32px;flex:0 0 32px;border-radius:50%;background:#e1f6eb;color:var(--green);font-size:16px}
+    .section-note{margin:-7px 0 15px;color:var(--muted);font-size:11px;line-height:1.5}
+    .profile-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+    .info-card{min-width:0;padding:12px;border:1px solid #e7f0eb;border-radius:10px;background:#f8fbf9}
+    .info-card span{display:block;margin-bottom:5px;color:var(--muted);font-size:10px;line-height:1.3;font-weight:750}
+    .info-card strong{display:block;color:var(--ink);font-size:12px;line-height:1.45;font-weight:800;overflow-wrap:anywhere}
+    .form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 12px}
+    .form-group{min-width:0}
+    .form-group.full{grid-column:1/-1}
+    label{display:block;margin:0 0 7px;color:#29483b;font-size:11px;font-weight:800}
+    .required{color:var(--danger)}
+    .field,textarea.field{
+      display:block;width:100%;min-height:44px;padding:10px 12px;border:1px solid #d7e5dd;
+      border-radius:10px;background:#fbfdfc;color:#173c2e;font-size:13px;outline:none;
+      transition:border-color .15s ease,box-shadow .15s ease
+    }
+    textarea.field{min-height:96px;resize:vertical;line-height:1.5}
+    .field::placeholder{color:#829087;opacity:1}
+    .field:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(0,107,63,.09)}
+    .field:disabled{background:#edf2ef;color:#718078}
+    .photo-panel{display:grid;grid-template-columns:112px minmax(0,1fr);gap:15px;align-items:center}
+    .photo-frame{display:grid;place-items:center;width:112px;aspect-ratio:4/5;overflow:hidden;border:1px dashed #9ccbb2;border-radius:12px;background:#f2f8f4;color:#719280;text-align:center}
+    .photo-frame img{display:block;width:100%;height:100%;object-fit:cover}
+    .photo-placeholder{padding:10px;font-size:11px;line-height:1.5}
+    .photo-actions{display:grid;gap:8px;min-width:0}
+    .photo-actions p{margin:0;color:var(--muted);font-size:11px;line-height:1.55}
+    .button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:43px;padding:10px 14px;border:0;border-radius:999px;font-size:10px;font-weight:900;letter-spacing:.4px;text-transform:uppercase}
+    .button-primary{background:var(--gold);color:#073e2b;box-shadow:0 4px 0 rgba(0,44,25,.08)}
+    .button-primary:hover:not(:disabled){background:#ffe633}
+    .button-outline{border:1px solid #b9d9c8;background:#fff;color:var(--green)}
+    .button-outline:hover{background:#f0f8f3}
+    .button:disabled{opacity:.55;cursor:not-allowed}
+    .upload-control{width:100%;font-size:11px;color:var(--muted)}
+    .upload-control::file-selector-button{margin-right:8px;padding:8px 10px;border:1px solid #b9d9c8;border-radius:8px;background:#f0f8f3;color:var(--green);font-size:10px;font-weight:800;cursor:pointer}
+    .form-actions{display:grid;gap:10px}
+    .submit-button{width:100%;min-height:49px;padding:13px 18px;background:var(--gold);color:#073e2b;font-size:11px}
+    .submit-button:hover:not(:disabled){background:#ffe633}
+    .secondary-button{width:100%;border:1px solid #c7ded1;background:#fff;color:var(--green)}
+    .help-copy{margin:0;color:var(--muted);font-size:10px;line-height:1.55;text-align:center}
+    .message{display:none;margin:0;padding:11px 13px;border-radius:10px;font-size:12px;line-height:1.55;overflow-wrap:anywhere}
+    .message.visible{display:block}.message.error{background:#fff0f0;color:var(--danger)}.message.success{background:#e7f8ee;color:#145b36}.message.info{background:#edf2f7;color:#425466}
+    .status-banner{margin:0 28px 22px;padding:12px 14px;border-radius:10px;background:#eaf6ee;color:#24583e;font-size:11px;line-height:1.55}
+    .status-banner.error{background:#fff0f0;color:var(--danger)}
+    .portal-footer{width:min(1120px,100%);margin:auto auto 0;padding:13px 0 12px;border-top:1px solid rgba(255,255,255,.58);color:rgba(255,255,255,.93);font-size:10px;line-height:1.5}
+    .footer-row{display:flex;align-items:center;justify-content:space-between;gap:16px}.footer-right{text-align:right}
+    .busy-indicator{display:none;position:fixed;inset:0;z-index:2000;align-items:center;justify-content:center;padding:20px;background:rgba(0,30,18,.38)}
+    .busy-indicator.visible{display:flex}
+    .busy-card{display:flex;align-items:center;gap:12px;padding:18px 22px;border-radius:14px;background:#fff;color:var(--ink);box-shadow:0 15px 45px rgba(0,0,0,.2);font-size:13px;font-weight:800}
+    .spinner{width:21px;height:21px;border:3px solid #dcebe2;border-top-color:var(--green);border-radius:50%;animation:spin .75s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @media(max-width:820px){
+      body{padding:0 8px}.portal{margin:8px auto 12px;border-radius:13px}
+      .portal-header{min-height:88px;gap:9px;padding:13px 11px;align-items:flex-start}
+      .brand-logo{width:43px;height:43px;flex-basis:43px;margin-top:2px}.brand-logo img{padding:3px}
+      .brand-kicker{margin-bottom:4px;font-size:6.5px;letter-spacing:.7px}
+      .brand-title{font-size:16px;line-height:1.15;letter-spacing:-.25px}
+      .brand-subtitle{max-width:240px;margin-top:4px;font-size:8.5px;line-height:1.35}
+      .header-actions{padding-top:14px}.header-button{min-height:28px;padding:0 9px;gap:5px;font-size:7px;letter-spacing:.25px}
+      .progress-strip{gap:8px;padding:10px 12px}.progress-label{font-size:9px}.progress-step{padding:5px 8px;font-size:8px}
+      .page-intro{padding:20px 13px 4px}.page-title{font-size:22px}.page-description{font-size:11px}
+      .form-layout{grid-template-columns:minmax(0,1fr);gap:12px;padding:14px 12px 20px}
+      .form-main,.form-side{gap:12px}.section-card{padding:14px;border-radius:13px}
+      .section-heading{margin-bottom:13px;font-size:14px}.section-icon{width:29px;height:29px;flex-basis:29px}
+      .profile-grid{gap:7px}.info-card{padding:10px}.info-card span{font-size:9px}.info-card strong{font-size:11px}
+      .form-grid{gap:12px 10px}.field,textarea.field{min-height:43px;font-size:13px}
+      .photo-panel{grid-template-columns:100px minmax(0,1fr);gap:12px}.photo-frame{width:100px}
+      .photo-actions .button{min-height:40px;padding:9px;font-size:9px}
+      .status-banner{margin:0 12px 16px}.portal-footer{margin:0;padding:11px 0 10px;font-size:9px}
+      .footer-row{display:block}.footer-right{margin-top:4px;text-align:left}
+    }
+    @media(max-width:390px){
+      body{padding:0 6px}.brand-title{font-size:14px}.brand-subtitle{font-size:8px}
+      .header-actions{padding-top:17px}.header-button{padding:0 7px;font-size:6.5px}
+      .form-grid{grid-template-columns:minmax(0,1fr)}.form-group.full{grid-column:auto}
+      .profile-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+      .photo-panel{grid-template-columns:88px minmax(0,1fr);gap:10px}.photo-frame{width:88px}
+      .section-card{padding:12px}.page-intro{padding-right:12px;padding-left:12px}
+    }
+    @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+  <main class="portal">
+    <header class="portal-header">
+      <a class="brand-logo" href="./index.html" aria-label="NSA WAWM home">
+        <img src="./assets/my_logo.png" alt="National Service Authority logo" width="72" height="72">
+      </a>
+      <div class="brand-copy">
+        <p class="brand-kicker">National Service Authority</p>
+        <h1 class="brand-title">Personnel Registration</h1>
+        <p class="brand-subtitle">Wassa Amenfi West Municipal Secretariat Â· Officer Portal</p>
+      </div>
+      <div class="header-actions">
+        <button class="header-button" id="homeButton" type="button"><span aria-hidden="true">â†</span> Home</button>
+      </div>
+    </header>
+
+    <div class="progress-strip" aria-label="Registration progress">
+      <span class="progress-label">Registration Completion</span>
+      <span class="progress-track"><span class="progress-fill"></span></span>
+      <span class="progress-step">STEP 2 OF 2</span>
+    </div>
+
+    <section class="page-intro">
+      <p class="section-kicker">Final Registration Step</p>
+      <h2 class="page-title">Complete your personnel profile</h2>
+      <p class="page-description">Review the personnel information retrieved from the master record, complete the required personal and contact details, and provide a passport photograph to finish registration.</p>
+    </section>
+
+    <form id="registrationForm" novalidate>
+      <div class="form-layout">
+        <div class="form-main">
+          <section class="section-card" aria-labelledby="profileHeading">
+            <h3 class="section-heading" id="profileHeading"><span class="section-icon" aria-hidden="true">â™™</span>Personnel Profile</h3>
+            <p class="section-note">These details are loaded from the official personnel master record.</p>
+            <div id="masterInfo" class="profile-grid">
+              <div class="info-card"><span>Personnel record</span><strong>Loading informationâ€¦</strong></div>
+            </div>
+          </section>
+
+          <section class="section-card" aria-labelledby="personalHeading">
+            <h3 class="section-heading" id="personalHeading"><span class="section-icon" aria-hidden="true">â™§</span>Personal Information</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="dateOfBirth">Date of Birth <span class="required">*</span></label>
+                <input class="field" type="date" id="dateOfBirth" name="dateOfBirth" required autocomplete="bday">
+              </div>
+            </div>
+          </section>
+
+          <section class="section-card" aria-labelledby="contactHeading">
+            <h3 class="section-heading" id="contactHeading"><span class="section-icon" aria-hidden="true">â˜Ž</span>Contact Information</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="phone">Phone Number</label>
+                <input class="field" id="phone" name="phone" type="tel" placeholder="Enter phone number" autocomplete="tel">
+              </div>
+              <div class="form-group">
+                <label for="email">Email Address</label>
+                <input class="field" id="email" name="email" type="email" placeholder="Enter email address" autocomplete="email">
+              </div>
+              <div class="form-group">
+                <label for="whatsapp">WhatsApp Number</label>
+                <input class="field" id="whatsapp" name="whatsapp" type="tel" placeholder="Enter WhatsApp number" autocomplete="tel">
+              </div>
+            </div>
+          </section>
+
+          <section class="section-card" aria-labelledby="addressHeading">
+            <h3 class="section-heading" id="addressHeading"><span class="section-icon" aria-hidden="true">âŒ‚</span>Residential Information</h3>
+            <div class="form-group">
+              <label for="address">Residential Address</label>
+              <textarea class="field" id="address" name="address" placeholder="Enter your residential address" rows="4" autocomplete="street-address"></textarea>
+            </div>
+          </section>
+
+          <section class="section-card" aria-labelledby="kinHeading">
+            <h3 class="section-heading" id="kinHeading"><span class="section-icon" aria-hidden="true">â™¡</span>Next of Kin</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="kinName">Full Name</label>
+                <input class="field" id="kinName" name="kinName" placeholder="Next of kin full name" autocomplete="off">
+              </div>
+              <div class="form-group">
+                <label for="kinRelation">Relationship</label>
+                <input class="field" id="kinRelation" name="kinRelation" placeholder="e.g. Parent, spouse">
+              </div>
+              <div class="form-group">
+                <label for="kinPhone">Phone Number</label>
+                <input class="field" id="kinPhone" name="kinPhone" type="tel" placeholder="Next of kin phone number">
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <aside class="form-side">
+          <section class="section-card" aria-labelledby="photoHeading">
+            <h3 class="section-heading" id="photoHeading"><span class="section-icon" aria-hidden="true">â–£</span>Passport Photograph</h3>
+            <p class="section-note">Take a new passport photo with your camera or upload an existing image. Review the preview before submitting.</p>
+            <div class="photo-panel">
+              <div class="photo-frame" id="photoFrame">
+                <div class="photo-placeholder" id="photoPlaceholder">Passport photo preview appears here</div>
+                <img id="preview" alt="Passport photograph preview" hidden>
+              </div>
+              <div class="photo-actions">
+                <button class="button button-primary" id="openCameraButton" type="button">â–£ Open Camera</button>
+                <p>The camera opens in a new tab. Take the photo and select â€œUse This Photoâ€.</p>
+              </div>
+            </div>
+            <div style="margin-top:16px">
+              <label for="photo">Or upload an existing passport photograph</label>
+              <input class="upload-control" type="file" id="photo" name="photo" accept="image/*">
+            </div>
+            <p class="section-note" style="margin:12px 0 0">Image formats depend on your device. A clear, front-facing passport-style photograph is recommended.</p>
+          </section>
+
+          <section class="section-card" aria-labelledby="verificationHeading">
+            <h3 class="section-heading" id="verificationHeading"><span class="section-icon" aria-hidden="true">âœ“</span>Regional Verification</h3>
+            <div class="form-group">
+              <label for="verificationDate">Regional Verification Date</label>
+              <input class="field" type="date" id="verificationDate" name="verificationDate">
+            </div>
+          </section>
+
+          <section class="section-card" id="employmentDetails" aria-labelledby="employmentHeading">
+            <h3 class="section-heading" id="employmentHeading"><span class="section-icon" aria-hidden="true">â–¤</span>Employment Information</h3>
+            <p class="section-note">Complete these fields if they apply to your placement.</p>
+            <div class="form-grid">
+              <div class="form-group full">
+                <label for="employerCompany">Employer Company</label>
+                <input class="field" id="employerCompany" name="employerCompany" placeholder="Employer company">
+              </div>
+              <div class="form-group full">
+                <label for="employerName">Employer Name</label>
+                <input class="field" id="employerName" name="employerName" placeholder="Employer contact/name">
+              </div>
+            </div>
+          </section>
+
+          <div class="form-actions">
+            <button class="button submit-button" id="submitButton" type="submit">Complete Registration <span aria-hidden="true">â†’</span></button>
+            <button class="button secondary-button" id="cancelButton" type="button">Return to Home</button>
+            <p class="help-copy">Your registration is submitted securely for processing. Do not close this page while submission is in progress.</p>
+            <p class="message" id="pageMessage" role="status" aria-live="polite"></p>
+          </div>
+        </aside>
+      </div>
+    </form>
+
+    <div class="status-banner" id="statusBanner" role="status" aria-live="polite">Preparing your registration formâ€¦</div>
+  </main>
+
+  <footer class="portal-footer">
+    <div class="footer-row">
+      <div>NSA Personnel Management System Â· Wassa Amenfi West Municipal Secretariat</div>
+      <div class="footer-right">Secure personnel administration Â· Â© <span id="footerYear"></span> NSA WAWM</div>
+    </div>
+  </footer>
+
+  <div class="busy-indicator" id="busyIndicator" aria-live="polite" aria-busy="true">
+    <div class="busy-card"><span class="spinner" aria-hidden="true"></span><span id="busyText">Please waitâ€¦</span></div>
+  </div>
+
+  <script>
+    /*
+     * GitHub Pages frontend integration.
+     * Configure apiUrl to point to a trusted HTTPS gateway that calls Apps Script.
+     * Never place API secrets in this public repository.
+     */
+    const NSA_PERSONNEL_CONFIG = {
+      apiUrl: (window.NSA_CONFIG && window.NSA_CONFIG.apiUrl) || "", // Required: deployed HTTPS API gateway URL.
+      cameraUrl: "https://nsawawm.github.io/camera-test/?mode=passport",
+      homeUrl: "./index.html",
+      successUrl: "./success.html",
+      registrationTokenKey: "NSA_REG_TOKEN",
+      verificationKey: "NSA_VERIFIED"
+    };
+
+    const state = {
+      token: "",
+      personnel: {},
+      photoData: null,
+      photoUploaded: null,
+      cameraWindow: null,
+      submitting: false,
+      completed: false
+    };
+
+    const $ = id => document.getElementById(id);
+    $("footerYear").textContent = String(new Date().getFullYear());
+
+    function setMessage(message, kind = "info") {
+      const el = $("pageMessage");
+      el.textContent = message;
+      el.className = "message visible " + kind;
+    }
+    function clearMessage() {
+      $("pageMessage").textContent = "";
+      $("pageMessage").className = "message";
+    }
+    function setBanner(message, isError = false) {
+      $("statusBanner").textContent = message;
+      $("statusBanner").className = "status-banner" + (isError ? " error" : "");
+    }
+    function showBusy(message) {
+      $("busyText").textContent = message || "Please waitâ€¦";
+      $("busyIndicator").classList.add("visible");
+    }
+    function hideBusy() {
+      $("busyIndicator").classList.remove("visible");
+    }
+    function getRegistrationToken() {
+      return sessionStorage.getItem(NSA_PERSONNEL_CONFIG.registrationTokenKey) || "";
+    }
+
+    function acceptRegistrationHandoff() {
+      // Prefer the same-origin session set by the GitHub OTP page.
+      let token = getRegistrationToken();
+      let verified = sessionStorage.getItem(NSA_PERSONNEL_CONFIG.verificationKey) === "YES";
+
+      // For a cross-origin Apps Script -> GitHub handoff, the OTP page may pass
+      // the token in the URL fragment. The fragment is not sent to the web server.
+      const fragment = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+      const fragmentToken = fragment.get("registrationToken") || fragment.get("token");
+      const fragmentVerified = fragment.get("verified");
+
+      if (!token && fragmentToken) {
+        token = fragmentToken.trim();
+        sessionStorage.setItem(NSA_PERSONNEL_CONFIG.registrationTokenKey, token);
+      }
+      if (fragmentVerified === "YES") {
+        verified = true;
+        sessionStorage.setItem(NSA_PERSONNEL_CONFIG.verificationKey, "YES");
+      }
+      if (window.location.hash) {
+        history.replaceState(null, "", window.location.pathname + window.location.search);
+      }
+
+      state.token = token;
+      return { token, verified };
+    }
+
+    async function apiRequest(action, payload) {
+      if (!NSA_PERSONNEL_CONFIG.apiUrl) {
+        throw new Error("The page design is ready, but the HTTPS API gateway has not been configured.");
+      }
+      const response = await fetch(NSA_PERSONNEL_CONFIG.apiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action, payload })
+      });
+      let result;
+      try { result = await response.json(); }
+      catch (_) { throw new Error("The server returned an unreadable response."); }
+      if (!response.ok) {
+        throw new Error(result && result.message ? result.message : "The server request failed.");
+      }
+      return result;
+    }
+
+    function safeText(value) {
+      return value === null || value === undefined || value === "" ? "Not provided" : String(value);
+    }
+
+    function displayMasterData(p) {
+      const fullName = [p["Other Names"], p["Last Name"]].filter(Boolean).join(" ").trim();
+      const fields = [
+        ["Full Name", fullName],
+        ["NSS Number", p["NSS Number"]],
+        ["Institution", p["Institution"]],
+        ["Course", p["Course"]],
+        ["Gender", p["Gender"]],
+        ["Age", p["Age"]],
+        ["Batch", p["Batch"]],
+        ["Allowance Type", p["Allowance Type"]],
+        ["Company Posted To", p["Company Posted To"]],
+        ["Region Posted To", p["Region Posted To"]],
+        ["District Posted To", p["District Posted To"]]
+      ];
+      const container = $("masterInfo");
+      container.replaceChildren();
+      fields.forEach(([label, value]) => {
+        const card = document.createElement("div");
+        card.className = "info-card";
+        const title = document.createElement("span");
+        title.textContent = label;
+        const detail = document.createElement("strong");
+        detail.textContent = safeText(value);
+        card.append(title, detail);
+        container.appendChild(card);
+      });
+    }
+
+    function setPhotoPreview(dataUrl) {
+      $("preview").src = dataUrl;
+      $("preview").hidden = false;
+      $("photoPlaceholder").hidden = true;
+    }
+
+    async function loadForm() {
+      const handoff = acceptRegistrationHandoff();
+      if (!handoff.verified) {
+        setBanner("Verification is required. Return to the Home page and complete the registration OTP step.", true);
+        setMessage("Registration verification is required.", "error");
+        $("submitButton").disabled = true;
+        return;
+      }
+      if (!handoff.token) {
+        setBanner("The registration session is missing or expired. Please start registration again.", true);
+        setMessage("Registration session expired.", "error");
+        $("submitButton").disabled = true;
+        return;
+      }
+
+      showBusy("Loading personnel informationâ€¦");
+      try {
+        const result = await apiRequest("loadRegistrationForm", { token: state.token });
+        if (!result || result.status !== "SUCCESS" || !result.formData || !result.formData.master) {
+          throw new Error(result && result.message ? result.message : "Unable to load personnel information.");
+        }
+        state.personnel = result.formData.master;
+        $("phone").value = state.personnel["Phone Number"] || "";
+        $("email").value = state.personnel["Email"] || "";
+        displayMasterData(state.personnel);
+        setBanner("Personnel record loaded. Complete the required fields and add a passport photograph.");
+      } catch (error) {
+        setBanner(error && error.message ? error.message : "Unable to load personnel information.", true);
+        setMessage(error && error.message ? error.message : "Unable to load personnel information.", "error");
+        $("submitButton").disabled = true;
+      } finally {
+        hideBusy();
+      }
+    }
+
+    function previewPhoto(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      if (!file.type || !file.type.startsWith("image/")) {
+        setMessage("Choose a valid image file for the passport photograph.", "error");
+        event.target.value = "";
+        return;
+      }
+      const reader = new FileReader();
+      reader.onerror = () => setMessage("The selected photograph could not be read.", "error");
+      reader.onload = e => {
+        const dataUrl = String(e.target.result || "");
+        if (!dataUrl.startsWith("data:image/")) {
+          setMessage("The selected photograph is invalid.", "error");
+          return;
+        }
+        state.photoData = {
+          base64: dataUrl,
+          mimeType: file.type || "image/jpeg",
+          fileName: file.name || "passport-photo",
+          nssNumber: state.personnel["NSS Number"] || ""
+        };
+        state.photoUploaded = null;
+        setPhotoPreview(dataUrl);
+        clearMessage();
+        setBanner("Passport photograph selected. Review it before completing registration.");
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function openCamera() {
+      if (state.cameraWindow && !state.cameraWindow.closed) {
+        state.cameraWindow.focus();
+        setMessage("The passport camera is already open. Complete the photo and choose â€œUse This Photoâ€.", "info");
+        return;
+      }
+      // Do not use noopener: the camera returns the image via window.opener.postMessage.
+      state.cameraWindow = window.open(NSA_PERSONNEL_CONFIG.cameraUrl, "_blank");
+      if (!state.cameraWindow) {
+        setMessage("The camera window was blocked. Allow pop-ups for the NSA WAWM site and try again.", "error");
+        return;
+      }
+      setMessage("Camera opened. Take the photo, review it, then select â€œUse This Photoâ€.", "success");
+    }
+
+    window.addEventListener("message", event => {
+      if (event.origin !== "https://nsawawm.github.io") return;
+      if (!state.cameraWindow || event.source !== state.cameraWindow) return;
+      const data = event.data || {};
+      if (data.type !== "NSA_PASSPORT_PHOTO" || typeof data.dataUrl !== "string") return;
+      if (!data.dataUrl.startsWith("data:image/")) {
+        setMessage("The returned passport photograph is invalid.", "error");
+        return;
+      }
+      state.photoData = {
+        base64: data.dataUrl,
+        mimeType: "image/jpeg",
+        fileName: "passport.jpg",
+        nssNumber: state.personnel["NSS Number"] || ""
+      };
+      state.photoUploaded = null;
+      $("photo").value = "";
+      setPhotoPreview(data.dataUrl);
+      setMessage("Passport photograph received successfully.", "success");
+      setBanner("Passport photograph received. You can now complete registration.");
+      try { state.cameraWindow.close(); } catch (_) {}
+    });
+
+    function collectRegistrationData() {
+      const dateOfBirth = $("dateOfBirth").value;
+      if (!dateOfBirth) throw new Error("Date of Birth is required.");
+      if (!$("registrationForm").checkValidity()) {
+        $("registrationForm").reportValidity();
+        throw new Error("Please check the highlighted form fields.");
+      }
+      if (!state.personnel["NSS Number"]) throw new Error("The NSS Number is missing from the loaded personnel record.");
+      return {
+        residentialAddress: $("address").value.trim(),
+        phone: $("phone").value.trim(),
+        email: $("email").value.trim(),
+        whatsapp: $("whatsapp").value.trim(),
+        dateOfBirth,
+        nextOfKinName: $("kinName").value.trim(),
+        nextOfKinRelation: $("kinRelation").value.trim(),
+        nextOfKinPhone: $("kinPhone").value.trim(),
+        regionalVerificationDate: $("verificationDate").value,
+        employerCompany: $("employerCompany").value.trim(),
+        employerName: $("employerName").value.trim(),
+        photoFileId: state.photoUploaded.fileId,
+        photoUrl: state.photoUploaded.url
+      };
+    }
+
+    async function submitRegistration(event) {
+      event.preventDefault();
+      if (state.submitting) return;
+      clearMessage();
+
+      if (!state.token) {
+        setMessage("Registration session is missing. Please start registration again.", "error");
+        return;
+      }
+      if (!state.photoData) {
+        setMessage("Passport photograph is required. Take a photo or upload an existing image.", "error");
+        return;
+      }
+      if (!$("dateOfBirth").value) {
+        $("dateOfBirth").focus();
+        setMessage("Date of Birth is required.", "error");
+        return;
+      }
+      if (!$("registrationForm").checkValidity()) {
+        $("registrationForm").reportValidity();
+        setMessage("Please check the highlighted form fields.", "error");
+        return;
+      }
+
+      state.submitting = true;
+      $("submitButton").disabled = true;
+      $("submitButton").innerHTML = "Submitting Registrationâ€¦";
+      showBusy("Uploading passport photographâ€¦");
+
+      try {
+        const upload = await apiRequest("uploadPersonnelPhoto", Object.assign({}, state.photoData, { registrationToken: state.token }));
+        if (!upload || upload.status !== "SUCCESS" || !upload.fileId || !upload.url) {
+          throw new Error(upload && upload.message ? upload.message : "Passport photograph upload failed.");
+        }
+        state.photoUploaded = upload;
+
+        const data = collectRegistrationData();
+        showBusy("Saving personnel registrationâ€¦");
+        const result = await apiRequest("submitRegistrationForm", {
+          token: state.token,
+          data
+        });
+        if (!result || result.status !== "SUCCESS" || !result.registrationNumber) {
+          throw new Error(result && result.message ? result.message : "Registration could not be completed.");
+        }
+
+        state.completed = true;
+        sessionStorage.setItem("REGISTRATION_NUMBER", result.registrationNumber);
+        if (result.receiptToken) sessionStorage.setItem("NSA_RECEIPT_TOKEN", result.receiptToken);
+        sessionStorage.removeItem(NSA_PERSONNEL_CONFIG.registrationTokenKey);
+        sessionStorage.removeItem(NSA_PERSONNEL_CONFIG.verificationKey);
+        setBanner("Registration completed successfully.");
+        setMessage("Registration completed. Opening your receiptâ€¦", "success");
+        const target = new URL(NSA_PERSONNEL_CONFIG.successUrl, window.location.href);
+        window.location.assign(target.toString());
+      } catch (error) {
+        setMessage(error && error.message ? error.message : "Registration failed. Please try again.", "error");
+        setBanner(error && error.message ? error.message : "Registration failed. Please try again.", true);
+      } finally {
+        hideBusy();
+        state.submitting = false;
+        if (!state.completed) {
+          $("submitButton").disabled = false;
+          $("submitButton").innerHTML = 'Complete Registration <span aria-hidden="true">â†’</span>';
+        }
+      }
+    }
+
+    function goHome() {
+      window.location.assign(NSA_PERSONNEL_CONFIG.homeUrl);
+    }
+
+    $("photo").addEventListener("change", previewPhoto);
+    $("openCameraButton").addEventListener("click", openCamera);
+    $("registrationForm").addEventListener("submit", submitRegistration);
+    $("homeButton").addEventListener("click", goHome);
+    $("cancelButton").addEventListener("click", goHome);
+
+    loadForm();
+  </script>
+</body>
+</html>
+

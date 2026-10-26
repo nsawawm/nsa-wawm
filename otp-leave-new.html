@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#006b3f">
+  <meta name="description" content="NSA WAWM personnel registration verification">
+  <title>NSA WAWM Officer Portal | Verify Registration</title>
+  <script src="./assets/config.js"></script>
+
+  <style>
+    :root{
+      --nsa-green:#006b3f;
+      --nsa-deep:#004d2c;
+      --nsa-gold:#fcd116;
+      --nsa-ink:#172b24;
+      --nsa-muted:#63736c;
+      --nsa-line:#dfe8e3;
+      --nsa-bg:#f4f7f6;
+      --nsa-paper:#ffffff;
+      --nsa-soft:#e8f4ee;
+      --nsa-danger:#a32119;
+      --nsa-success:#17613e;
+    }
+
+    *{box-sizing:border-box}
+
+    html,body{
+      width:100%;
+      min-height:100%;
+      margin:0;
+    }
+
+    body{
+      min-height:100vh;
+      min-height:100dvh;
+      font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;
+      color:var(--nsa-ink);
+      background:var(--nsa-bg);
+    }
+
+    button,input{font:inherit}
+
+    button{cursor:pointer}
+
+    .page{
+      width:100%;
+      min-height:100vh;
+      min-height:100dvh;
+      display:grid;
+      place-items:center;
+      padding:16px;
+    }
+
+    .portal-shell{
+      width:min(1080px,100%);
+      height:min(736px,calc(100dvh - 32px));
+      max-height:calc(100dvh - 32px);
+      display:grid;
+      grid-template-columns:minmax(320px,.92fr) minmax(420px,1.08fr);
+      overflow:hidden;
+      background:#fff;
+      border:1px solid #dce7e1;
+      border-radius:24px;
+      box-shadow:0 24px 70px rgba(20,52,38,.10);
+    }
+
+    /* LEFT SIDE: deliberately follows the established login page structure */
+    .brand-panel{
+      position:relative;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+      padding:34px 38px;
+      color:#fff;
+      background:
+        radial-gradient(circle at 12% 8%,rgba(255,255,255,.10),transparent 24%),
+        linear-gradient(145deg,#006b3f 0%,#005a35 54%,#004d2c 100%);
+    }
+
+    .brand-panel::before{
+      content:"";
+      position:absolute;
+      width:520px;
+      height:520px;
+      left:-290px;
+      bottom:-250px;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:50%;
+      box-shadow:
+        0 0 0 44px rgba(255,255,255,.025),
+        0 0 0 88px rgba(255,255,255,.018);
+    }
+
+    .brand-panel::after{
+      content:"";
+      position:absolute;
+      left:-12%;
+      right:-12%;
+      bottom:-30px;
+      height:72px;
+      background:var(--nsa-gold);
+      transform:rotate(-2deg);
+    }
+
+    .brand-content{
+      position:relative;
+      z-index:1;
+      width:min(390px,100%);
+      text-align:center;
+    }
+
+    .logo-wrap{
+      width:112px;
+      height:108px;
+      margin:0 auto 16px;
+      display:grid;
+      place-items:center;
+    }
+
+    .brand-logo{
+      width:100%;
+      height:100%;
+      display:block;
+      object-fit:contain;
+    }
+
+    .brand-kicker{
+      margin:0 0 8px;
+      font-size:12px;
+      line-height:1.4;
+      font-weight:800;
+      letter-spacing:.15em;
+      text-transform:uppercase;
+      color:#dff4e8;
+    }
+
+    .brand-title{
+      margin:0;
+      font-size:clamp(29px,4vw,43px);
+      line-height:1.12;
+      letter-spacing:-.035em;
+      font-weight:800;
+      color:#fff;
+    }
+
+    .brand-divider{
+      width:58px;
+      height:3px;
+      margin:14px auto;
+      border:0;
+      border-radius:99px;
+      background:var(--nsa-gold);
+    }
+
+    .brand-description{
+      max-width:320px;
+      margin:0 auto;
+      font-size:15px;
+      line-height:1.65;
+      color:#eaf7ef;
+    }
+
+    .brand-tag{
+      width:max-content;
+      max-width:100%;
+      margin:18px auto 0;
+      padding:9px 13px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      border:1px solid rgba(255,255,255,.20);
+      border-radius:999px;
+      background:rgba(255,255,255,.08);
+      font-size:11px;
+      font-weight:750;
+      color:#fff;
+    }
+
+    .brand-tag-dot{
+      width:7px;
+      height:7px;
+      flex:none;
+      border-radius:50%;
+      background:var(--nsa-gold);
+      box-shadow:0 0 0 4px rgba(252,209,22,.12);
+    }
+
+    /* RIGHT SIDE */
+    .form-panel{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:30px 50px;
+      background:#fff;
+    }
+
+    .form-content{
+      width:min(470px,100%);
+    }
+
+    .verification-icon{
+      width:56px;
+      height:56px;
+      margin-bottom:12px;
+      display:grid;
+      place-items:center;
+      color:var(--nsa-green);
+      background:var(--nsa-soft);
+      border-radius:18px;
+    }
+
+    .verification-icon svg{
+      width:32px;
+      height:32px;
+    }
+
+    .form-heading{
+      margin:0;
+      color:#173f2e;
+      font-size:clamp(25px,3vw,34px);
+      line-height:1.18;
+      letter-spacing:-.025em;
+      font-weight:500;
+    }
+
+    .form-heading strong{
+      font-weight:800;
+    }
+
+    .form-divider{
+      width:52px;
+      height:3px;
+      margin:11px 0 14px;
+      border:0;
+      border-radius:99px;
+      background:var(--nsa-green);
+    }
+
+    .form-intro{
+      margin:0 0 16px;
+      color:#63736c;
+      font-size:14px;
+      line-height:1.65;
+    }
+
+    .delivery{
+      display:grid;
+      gap:7px;
+      margin-bottom:16px;
+    }
+
+    .delivery-row{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-height:50px;
+      padding:7px 10px;
+      border:1px solid var(--nsa-line);
+      border-radius:12px;
+      background:#fbfdfb;
+    }
+
+    .delivery-icon{
+      width:32px;
+      height:32px;
+      flex:none;
+      display:grid;
+      place-items:center;
+      color:var(--nsa-green);
+      background:var(--nsa-soft);
+      border-radius:10px;
+    }
+
+    .delivery-icon svg{
+      width:19px;
+      height:19px;
+    }
+
+    .delivery-label{
+      margin-bottom:3px;
+      color:#738078;
+      font-size:10px;
+      font-weight:750;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+    }
+
+    .delivery-value{
+      color:#26392f;
+      font-size:13px;
+      font-weight:700;
+    }
+
+    .section-label{
+      display:block;
+      margin:0 0 10px;
+      color:#293e33;
+      font-size:12px;
+      font-weight:800;
+    }
+
+    .digits{
+      display:grid;
+      grid-template-columns:repeat(6,minmax(0,1fr));
+      gap:8px;
+    }
+
+    .digit{
+      width:100%;
+      min-width:0;
+      height:52px;
+      padding:0;
+      border:1.5px solid #cfdad4;
+      border-radius:11px;
+      background:#fbfdfb;
+      color:var(--nsa-deep);
+      text-align:center;
+      font-size:24px;
+      font-weight:800;
+      outline:none;
+      transition:border-color .15s ease,box-shadow .15s ease,background .15s ease;
+    }
+
+    .digit:focus{
+      border-color:var(--nsa-green);
+      background:#fff;
+      box-shadow:0 0 0 3px rgba(0,107,63,.12);
+    }
+
+    .digit.filled{
+      border-color:#a6cbb5;
+      background:#f3faf5;
+    }
+
+    .verify{
+      width:100%;
+      min-height:54px;
+      margin-top:14px;
+      border:0;
+      border-radius:11px;
+      background:var(--nsa-gold);
+      color:#14241d;
+      font-size:13px;
+      font-weight:900;
+      letter-spacing:.045em;
+      box-shadow:none;
+      transition:filter .15s ease,transform .15s ease;
+    }
+
+    .verify:hover:not(:disabled){
+      filter:brightness(.97);
+    }
+
+    .verify:active:not(:disabled){
+      transform:translateY(1px);
+    }
+
+    .verify:disabled{
+      opacity:.60;
+      cursor:wait;
+    }
+
+    .timerline{
+      margin:10px 0 0;
+      text-align:center;
+      color:#69776f;
+      font-size:12px;
+    }
+
+    .resend{
+      padding:0 0 0 3px;
+      border:0;
+      background:none;
+      color:var(--nsa-green);
+      font-size:12px;
+      font-weight:850;
+      text-decoration:underline;
+      text-underline-offset:3px;
+    }
+
+    .resend:disabled{
+      color:#9ba7a0;
+      text-decoration:none;
+      cursor:wait;
+    }
+
+    .notice{
+      display:none;
+      margin-top:10px;
+      padding:8px 10px;
+      border-radius:10px;
+      font-size:12px;
+      line-height:1.5;
+    }
+
+    .notice.show{display:block}
+    .notice.info{background:#edf5ff;color:#244c79;border:1px solid #d6e7ff}
+    .notice.error{background:#fff0ef;color:var(--nsa-danger);border:1px solid #f4d1ce}
+    .notice.success{background:#edf8f0;color:#155d35;border:1px solid #d0e9d8}
+
+    .help{
+      margin:12px 0 0;
+      color:#7a8780;
+      font-size:11px;
+      line-height:1.6;
+      text-align:center;
+    }
+
+    .back{
+      display:inline-block;
+      margin-top:0;
+      color:#63736c;
+      font-size:12px;
+      font-weight:750;
+      text-align:center;
+      text-decoration:none;
+    }
+
+    .navigation-actions{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:14px;
+    }
+
+    .home-button{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:34px;
+      padding:0 14px;
+      border:1px solid #cfe0d7;
+      border-radius:9px;
+      background:#f4f8f5;
+      color:var(--nsa-green);
+      font-size:12px;
+      font-weight:850;
+      text-decoration:none;
+      transition:background .15s ease,border-color .15s ease,color .15s ease;
+    }
+
+    .home-button:hover{
+      background:var(--nsa-soft);
+      border-color:#a8c9b6;
+      color:var(--nsa-deep);
+    }
+
+    .footer{
+      margin-top:16px;
+      padding-top:9px;
+      border-top:1px solid #edf1ee;
+      color:#8a958f;
+      font-size:10px;
+      line-height:1.55;
+      text-align:center;
+    }
+
+    @media (max-width:800px){
+      .page{
+        padding:0;
+        display:block;
+      }
+
+      .portal-shell{
+        height:auto;
+        max-height:none;
+      }
+
+      .portal-shell{
+        width:100%;
+        min-height:100vh;
+        min-height:100dvh;
+        display:grid;
+        grid-template-columns:1fr;
+        grid-template-rows:auto 1fr;
+        border:0;
+        border-radius:0;
+        box-shadow:none;
+      }
+
+      .brand-panel{
+        min-height:220px;
+        padding:22px 24px 34px;
+      }
+
+      .brand-panel::after{
+        bottom:-32px;
+        height:62px;
+      }
+
+      .logo-wrap{
+        width:112px;
+        height:108px;
+        margin-bottom:14px;
+      }
+
+      .brand-kicker{
+        font-size:10px;
+        margin-bottom:6px;
+      }
+
+      .brand-title{
+        font-size:29px;
+      }
+
+      .brand-divider{
+        margin:13px auto;
+      }
+
+      .brand-description{
+        font-size:13px;
+      }
+
+      .brand-tag{
+        margin-top:15px;
+        padding:7px 10px;
+        font-size:10px;
+      }
+
+      .form-panel{
+        padding:24px 22px 22px;
+        align-items:flex-start;
+      }
+
+      .form-content{
+        width:min(470px,100%);
+        margin:0 auto;
+      }
+
+      .verification-icon{
+        width:50px;
+        height:50px;
+        margin-bottom:10px;
+      }
+
+      .verification-icon svg{
+        width:31px;
+        height:31px;
+      }
+
+      .form-heading{
+        font-size:26px;
+      }
+
+      .form-divider{
+        margin:9px 0 12px;
+      }
+
+      .form-intro{
+        margin-bottom:13px;
+      }
+
+      .digit{
+        height:50px;
+        font-size:21px;
+      }
+    }
+
+    @media (max-width:430px){
+      .brand-panel{
+        min-height:270px;
+        padding:23px 18px 36px;
+      }
+
+      .logo-wrap{
+        width:94px;
+        height:91px;
+        margin-bottom:10px;
+      }
+
+      .brand-kicker{
+        font-size:8px;
+      }
+
+      .brand-title{
+        font-size:24px;
+      }
+
+      .brand-description{
+        font-size:11px;
+      }
+
+      .brand-tag{
+        margin-top:10px;
+        font-size:9px;
+      }
+
+      .form-panel{
+        padding:25px 17px 22px;
+      }
+
+      .form-heading{
+        font-size:23px;
+      }
+
+      .form-intro{
+        font-size:13px;
+      }
+
+      .delivery-row{
+        min-height:53px;
+      }
+
+      .delivery-value{
+        font-size:12px;
+      }
+
+      .digits{
+        gap:5px;
+      }
+
+      .digit{
+        height:50px;
+        border-radius:9px;
+        font-size:21px;
+      }
+
+      .verify{
+        min-height:52px;
+      }
+    }
+
+    @media (max-width:360px){
+      .brand-panel{
+        min-height:250px;
+      }
+
+      .logo-wrap{
+        width:82px;
+        height:79px;
+      }
+
+      .brand-title{
+        font-size:22px;
+      }
+
+      .delivery-row{
+        padding:8px 9px;
+      }
+
+      .delivery-icon{
+        width:32px;
+        height:32px;
+      }
+
+      .delivery-value{
+        font-size:11px;
+      }
+
+      .digit{
+        height:47px;
+        font-size:20px;
+      }
+    }
+
+    @media (prefers-reduced-motion:reduce){
+      *,*::before,*::after{
+        transition:none!important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+    <main class="portal-shell" aria-label="NSA WAWM registration verification">
+
+      <section class="brand-panel" aria-labelledby="brandTitle">
+        <div class="brand-content">
+          <div class="logo-wrap" aria-label="National Service Authority logo">
+            <img
+              class="brand-logo"
+              src="./assets/my_logo.png"
+              alt="National Service Authority logo"
+              width="132"
+              height="128"
+            >
+          </div>
+
+          <p class="brand-kicker">National Service Authority</p>
+          <h1 class="brand-title" id="brandTitle">Welcome to NSA WAWM</h1>
+          <hr class="brand-divider">
+          <p class="brand-description">Wassa Amenfi West Municipal Secretariat</p>
+
+          <div class="brand-tag">
+            <span class="brand-tag-dot" aria-hidden="true"></span>
+            Authorised registration
+          </div>
+        </div>
+      </section>
+
+      <section class="form-panel" aria-labelledby="verificationHeading">
+        <div class="form-content">
+
+          <div class="verification-icon" aria-hidden="true">
+            <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M24 5.5 39 11v11.1c0 9.2-6.1 15.5-15 20.4C15.1 37.6 9 31.3 9 22.1V11l15-5.5Z" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
+              <path d="m16.5 24 5 5 10.5-11" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+
+          <h2 class="form-heading" id="verificationHeading">
+            Verify <strong>Your Identity</strong>
+          </h2>
+
+          <div class="form-divider" aria-hidden="true"></div>
+
+          <p class="form-intro">
+            Enter the 6-digit verification code sent to your registered contact details to continue with personnel registration.
+          </p>
+
+          <div class="delivery" aria-label="Verification delivery methods">
+            <div class="delivery-row">
+              <div class="delivery-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <rect x="6" y="2.5" width="12" height="19" rx="2.5" stroke="currentColor" stroke-width="1.8"/>
+                  <path d="M10 18.2h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <div>
+                <div class="delivery-label">Text message</div>
+                <div class="delivery-value" id="phoneHint">Loading registered phone...</div>
+              </div>
+            </div>
+
+            <div class="delivery-row">
+              <div class="delivery-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <rect x="2.5" y="4.5" width="19" height="15" rx="2.5" stroke="currentColor" stroke-width="1.8"/>
+                  <path d="m4 7 8 6 8-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <div>
+                <div class="delivery-label">Email</div>
+                <div class="delivery-value" id="emailHint">Loading registered email...</div>
+              </div>
+            </div>
+          </div>
+
+          <label class="section-label" for="digit1">6-digit verification code</label>
+
+          <div class="digits" role="group" aria-label="Enter the six digit verification code">
+            <input class="digit" id="digit1" inputmode="numeric" autocomplete="one-time-code" maxlength="1" aria-label="Digit 1">
+            <input class="digit" id="digit2" inputmode="numeric" maxlength="1" aria-label="Digit 2">
+            <input class="digit" id="digit3" inputmode="numeric" maxlength="1" aria-label="Digit 3">
+            <input class="digit" id="digit4" inputmode="numeric" maxlength="1" aria-label="Digit 4">
+            <input class="digit" id="digit5" inputmode="numeric" maxlength="1" aria-label="Digit 5">
+            <input class="digit" id="digit6" inputmode="numeric" maxlength="1" aria-label="Digit 6">
+          </div>
+
+          <button class="verify" id="verifyBtn" type="button">
+            VERIFY &amp; CONTINUE
+          </button>
+
+          <p class="timerline" id="timerLine">
+            Resend available in <strong id="countdown">60</strong> seconds
+          </p>
+
+          <p class="timerline" id="resendLine" hidden>
+            Didn't receive the code?
+            <button class="resend" id="resendBtn" type="button">Resend OTP</button>
+          </p>
+
+          <div class="notice info show" id="notice" role="status">
+            A verification code has been sent to your registered contact details.
+          </div>
+
+          <p class="help">
+            For your security, never share your verification code with anyone.
+            If you do not receive the code, check your messages and email spam folder.
+          </p>
+
+          <div class="navigation-actions" aria-label="Navigation">
+            <a class="home-button" href="#" id="homeBtn">⌂ Home</a>
+            <a class="back" href="#" id="backLink">← Return to the NSA portal</a>
+          </div>
+
+          <div class="footer">
+            NSA Personnel Management System · Wassa Amenfi West Municipal Secretariat<br>
+            Secure personnel administration
+          </div>
+
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script>
+    "use strict";
+
+    const config = window.NSA_CONFIG || {};
+    const API_URL = String(config.apiUrl || "").trim();
+    const HOME_URL = String(config.homeUrl || "./index.html");
+    const REGISTRATION_URL = String(config.personnelUrl || "./personnel.html");
+
+    const $ = id => document.getElementById(id);
+    const digits = Array.from(document.querySelectorAll(".digit"));
+
+    let countdown = 60;
+    let timerHandle = null;
+    let busy = false;
+    let registrationToken = sessionStorage.getItem("NSA_REG_TOKEN") || "";
+
+    function showNotice(message, type) {
+      const el = $("notice");
+      el.textContent = message;
+      el.className = "notice show " + (type || "info");
+    }
+
+    function startTimer() {
+      if (timerHandle) clearInterval(timerHandle);
+
+      countdown = 60;
+      $("countdown").textContent = String(countdown);
+      $("timerLine").hidden = false;
+      $("resendLine").hidden = true;
+
+      timerHandle = setInterval(() => {
+        countdown -= 1;
+        $("countdown").textContent = String(Math.max(0, countdown));
+
+        if (countdown <= 0) {
+          clearInterval(timerHandle);
+          timerHandle = null;
+          $("timerLine").hidden = true;
+          $("resendLine").hidden = false;
+        }
+      }, 1000);
+    }
+
+    function readCode() {
+      return digits.map(input => input.value).join("");
+    }
+
+    function setBusy(value) {
+      busy = value;
+      $("verifyBtn").disabled = value;
+      $("resendBtn").disabled = value;
+      $("verifyBtn").textContent = value ? "VERIFYING..." : "VERIFY & CONTINUE";
+    }
+
+    async function apiRequest(action, payload) {
+      if (!API_URL) {
+        throw new Error("The HTTPS API gateway is not configured.");
+      }
+
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+          action: action,
+          payload: payload || {}
+        })
+      });
+
+      let result = null;
+
+      try {
+        result = await response.json();
+      } catch (_) {
+        throw new Error("The API gateway returned an unreadable response.");
+      }
+
+      if (!response.ok || !result || result.status === "ERROR") {
+        throw new Error(
+          result && result.message
+            ? result.message
+            : "The verification request could not be completed."
+        );
+      }
+
+      return result;
+    }
+
+    function maskPhone(value) {
+      const phone = String(value || "").trim();
+      if (!phone) return "Phone number unavailable";
+      if (phone.includes("•")) return phone;
+      if (phone.length <= 4) return phone;
+      return phone.slice(0, 3) + "••••" + phone.slice(-2);
+    }
+
+    function maskEmail(value) {
+      const email = String(value || "").trim();
+      if (!email) return "Email address unavailable";
+      if (email.includes("•")) return email;
+
+      const at = email.indexOf("@");
+      if (at <= 0) return "Email address unavailable";
+
+      const local = email.slice(0, at);
+      const domain = email.slice(at + 1);
+
+      let visibleLocal = local.slice(0, Math.min(2, local.length));
+      if (local.length > visibleLocal.length) {
+        visibleLocal += "••••";
+      }
+
+      return visibleLocal + "@" + domain;
+    }
+
+    function setDeliveryDetails(delivery) {
+      const data = delivery || {};
+
+      $("phoneHint").textContent =
+        data.phone ? maskPhone(data.phone) : "Phone number unavailable";
+
+      $("emailHint").textContent =
+        data.email ? maskEmail(data.email) : "Email address unavailable";
+    }
+
+    function loadRegistrationContact() {
+      /*
+       * The current API gateway does not expose a public getRegistrationContact
+       * method. Use contact details only when the Home page has already supplied
+       * them through sessionStorage. Never place contact details in the URL.
+       */
+      let delivery = {};
+
+      const storedKeys = [
+        "NSA_REG_CONTACT",
+        "NSA_REG_PERSONNEL"
+      ];
+
+      for (const key of storedKeys) {
+        try {
+          const raw = sessionStorage.getItem(key);
+          if (!raw) continue;
+          const parsed = JSON.parse(raw);
+          const candidate = parsed && parsed.delivery
+            ? parsed.delivery
+            : parsed;
+
+          if (candidate && typeof candidate === "object") {
+            delivery = {
+              phone:
+                candidate.phone ||
+                candidate.mobile ||
+                candidate.phoneNumber ||
+                "",
+              email:
+                candidate.email ||
+                candidate.emailAddress ||
+                ""
+            };
+
+            if (delivery.phone || delivery.email) break;
+          }
+        } catch (_) {
+          /* Ignore malformed optional client-side contact data. */
+        }
+      }
+
+      setDeliveryDetails(delivery);
+    }
+
+    async function initializePage() {
+      const params = new URLSearchParams(window.location.search);
+      const purpose = String(params.get("purpose") || "registration").toLowerCase();
+
+      if (purpose !== "registration") {
+        showNotice("This verification page is configured for personnel registration.", "error");
+        return;
+      }
+
+      const hash = new URLSearchParams(window.location.hash.slice(1));
+      const handoffCode = hash.get("handoff") || "";
+
+      if (!API_URL) {
+        setDeliveryDetails({});
+        showNotice("The HTTPS API gateway is not configured.", "error");
+        return;
+      }
+
+      try {
+        if (handoffCode) {
+          const exchanged = await apiRequest("exchangeRegistrationHandoff", {
+            handoffCode: handoffCode
+          });
+
+          if (!exchanged || !exchanged.token) {
+            throw new Error("The registration handoff could not be established.");
+          }
+
+          registrationToken = String(exchanged.token);
+          sessionStorage.setItem("NSA_REG_TOKEN", registrationToken);
+
+          history.replaceState(
+            null,
+            document.title,
+            window.location.pathname + window.location.search
+          );
+        }
+
+        if (!registrationToken) {
+          throw new Error(
+            "Your registration session is missing. Please return to the NSA portal and start again."
+          );
+        }
+
+        loadRegistrationContact();
+
+        showNotice(
+          "A verification code has been sent to your registered contact details.",
+          "success"
+        );
+      } catch (error) {
+        showNotice(
+          error && error.message
+            ? error.message
+            : "The verification session could not be established.",
+          "error"
+        );
+      }
+    }
+
+    digits.forEach((input, index) => {
+      input.addEventListener("input", () => {
+        input.value = input.value.replace(/\D/g, "").slice(-1);
+        input.classList.toggle("filled", Boolean(input.value));
+
+        if (input.value && index < digits.length - 1) {
+          digits[index + 1].focus();
+        }
+      });
+
+      input.addEventListener("keydown", event => {
+        if (event.key === "Backspace" && !input.value && index > 0) {
+          digits[index - 1].focus();
+        }
+
+        if (event.key === "ArrowLeft" && index > 0) {
+          digits[index - 1].focus();
+        }
+
+        if (event.key === "ArrowRight" && index < digits.length - 1) {
+          digits[index + 1].focus();
+        }
+
+        if (event.key === "Enter") {
+          $("verifyBtn").click();
+        }
+      });
+
+      input.addEventListener("paste", event => {
+        const pasted = (
+          event.clipboardData || window.clipboardData
+        ).getData("text").replace(/\D/g, "").slice(0, 6);
+
+        if (!pasted) return;
+
+        event.preventDefault();
+
+        digits.forEach((el, i) => {
+          el.value = pasted[i] || "";
+          el.classList.toggle("filled", Boolean(el.value));
+        });
+
+        digits[Math.min(pasted.length, digits.length - 1)].focus();
+      });
+    });
+
+    $("verifyBtn").addEventListener("click", async () => {
+      if (busy) return;
+
+      const otp = readCode();
+
+      if (!/^\d{6}$/.test(otp)) {
+        showNotice("Enter all 6 digits of the verification code.", "error");
+        const firstEmpty = digits.find(input => !input.value);
+        if (firstEmpty) firstEmpty.focus();
+        return;
+      }
+
+      if (!registrationToken) {
+        showNotice("Your registration session is missing. Please start again.", "error");
+        return;
+      }
+
+      setBusy(true);
+
+      try {
+        await apiRequest("confirmRegistrationOTP", {
+          token: registrationToken,
+          otp: otp
+        });
+
+        sessionStorage.setItem("NSA_VERIFIED", "YES");
+
+        showNotice(
+          "Identity verified. Opening the personnel registration form...",
+          "success"
+        );
+
+        window.location.assign(REGISTRATION_URL);
+      } catch (error) {
+        showNotice(
+          error && error.message
+            ? error.message
+            : "The verification code could not be confirmed.",
+          "error"
+        );
+        setBusy(false);
+      }
+    });
+
+    $("resendBtn").addEventListener("click", async () => {
+      if (busy) return;
+
+      if (!registrationToken) {
+        showNotice("Your registration session is missing. Please start again.", "error");
+        return;
+      }
+
+      setBusy(true);
+
+      try {
+        await apiRequest("resendOTP", {
+          token: registrationToken,
+          purpose: "registration"
+        });
+
+        showNotice(
+          "A new verification code has been sent.",
+          "success"
+        );
+
+        startTimer();
+      } catch (error) {
+        showNotice(
+          error && error.message
+            ? error.message
+            : "The verification code could not be resent.",
+          "error"
+        );
+      } finally {
+        setBusy(false);
+      }
+    });
+
+    $("homeBtn").addEventListener("click", event => {
+      event.preventDefault();
+      sessionStorage.removeItem("NSA_REG_TOKEN");
+      sessionStorage.removeItem("NSA_VERIFIED");
+      window.location.assign(HOME_URL);
+    });
+
+    $("backLink").addEventListener("click", event => {
+      event.preventDefault();
+      window.location.assign(HOME_URL);
+    });
+
+    startTimer();
+    initializePage();
+  </script>
+</body>
+</html>

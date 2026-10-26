@@ -2013,54 +2013,771 @@ button{cursor:pointer}
 }
 </style>
 
+<style id="officer-login-style">
+:root{--login-green:#006b3f;--login-deep:#004d2c;--login-bright:#28c96b;--login-gold:#ffdc00;--login-ink:#123b2c;--login-muted:#5f716a;--login-line:#d9e9e1}
+#officerHome.officer-page{min-height:100vh;min-height:100dvh;width:100%;margin:0;padding:22px 24px 18px;display:flex;flex-direction:column;background:linear-gradient(135deg,transparent 0 45%,rgba(40,201,107,.95) 45% 63%,transparent 63%),linear-gradient(135deg,#005b36 0%,#006f43 52%,#005a35 100%);color:var(--login-ink);font-family:Inter,Roboto,"Segoe UI",Arial,sans-serif;overflow-x:hidden}
+#officerHome .officer-main{width:min(1120px,100%);margin:0 auto;padding:0!important;flex:0 0 auto}
+#officerHome .officer-card{width:100%;margin:0!important;padding:0!important;border:0!important;border-radius:16px!important;overflow:hidden;background:#fff!important;box-shadow:0 20px 45px rgba(0,35,20,.25)!important}
+#officerHome .officer-brand{position:relative;min-height:132px;width:100%;padding:20px 155px 18px 126px!important;display:flex;align-items:center;background:var(--login-bright)!important;color:#fff!important;text-align:left!important;overflow:hidden;clip-path:none!important;border:0!important}
+#officerHome .officer-brand:before{content:"";position:absolute;width:330px;height:330px;left:-205px;top:-190px;border:1px solid rgba(255,255,255,.12);border-radius:50%;box-shadow:0 0 0 30px rgba(255,255,255,.03),0 0 0 60px rgba(255,255,255,.02)}
+#officerHome .officer-brand:after{content:"";position:absolute;width:270px;height:270px;right:-175px;bottom:-190px;border:1px solid rgba(255,255,255,.13);border-radius:50%}
+#officerHome .officer-logo{position:absolute!important;left:28px;top:20px;width:82px!important;height:92px!important;padding:7px!important;margin:0!important;object-fit:contain!important;background:#fff;border-radius:4px;z-index:2}
+#officerHome .officer-brand-copy{position:relative;z-index:2;min-width:0}
+#officerHome .officer-kicker,#officerHome .section-kicker{font-size:9px;font-weight:900;letter-spacing:1.8px;line-height:1.2}
+#officerHome .officer-kicker{margin:0 0 7px;color:#fff}
+#officerHome .officer-brand .title{margin:0 0 7px!important;color:#fff!important;font-size:clamp(24px,3vw,32px)!important;line-height:1.08!important;font-weight:850!important;letter-spacing:-.5px}
+#officerHome .officer-brand p{margin:2px 0!important;color:rgba(255,255,255,.95)!important;font-size:11px!important;line-height:1.4!important}
+#officerHome #loggedOfficer{display:inline-block;margin-top:6px!important;padding:5px 9px!important;border:1px solid rgba(255,255,255,.4);border-radius:999px;background:rgba(0,77,44,.16);color:#fff!important;font-size:9px!important;font-weight:800!important}
+#officerHome .officer-logout{position:absolute!important;right:28px!important;top:31px!important;z-index:4;min-height:37px!important;padding:8px 16px!important;margin:0!important;border:1px solid rgba(255,255,255,.62)!important;border-radius:999px!important;background:transparent!important;color:#fff!important;font-size:9px!important;font-weight:900!important;letter-spacing:.7px;box-shadow:none!important}
+#officerHome .portal-grid{display:grid;grid-template-columns:1fr 1fr;min-height:420px}
+#officerHome .qr-panel{padding:40px 38px 34px;background:#fff}
+#officerHome .manual-panel{padding:40px 38px 34px;background:var(--login-green);color:#fff}
+#officerHome .section-kicker{margin:0 0 12px;color:#007047}
+#officerHome .manual-panel .section-kicker{color:#bdebd3}
+#officerHome .qr-panel h2,#officerHome .manual-panel h2{margin:0 0 9px!important;font-size:clamp(25px,3vw,33px)!important;line-height:1.1!important;font-weight:850!important;letter-spacing:-.5px}
+#officerHome .qr-panel h2{color:var(--login-ink)!important}#officerHome .manual-panel h2{color:#fff!important}
+#officerHome .section-description{margin:0 0 22px!important;max-width:530px;color:var(--login-muted)!important;font-size:12px!important;line-height:1.55!important}
+#officerHome .manual-panel .section-description{color:rgba(255,255,255,.84)!important}
+#officerHome .qr-card{width:100%;margin:0!important;padding:18px!important;display:grid!important;grid-template-columns:64px 1fr;grid-template-rows:auto auto auto;column-gap:15px;row-gap:3px;align-items:center;border:1px solid var(--login-line)!important;border-radius:15px!important;background:#fff!important;box-shadow:0 9px 20px rgba(0,48,29,.08)!important}
+#officerHome .qr-image-circle{grid-column:1;grid-row:1/3;width:64px!important;height:64px!important;margin:0!important;border-radius:50%;background:#e2f5ed!important;display:flex!important;align-items:center;justify-content:center}
+#officerHome .qr-image-circle img{width:45px!important;height:45px!important;object-fit:contain}
+#officerHome .qr-card-copy h3{margin:0!important;color:var(--login-ink)!important;font-size:15px!important;line-height:1.2!important;font-weight:850!important}
+#officerHome .qr-card-copy p{margin:4px 0 0!important;color:#66766f!important;font-size:9px!important;line-height:1.4!important}
+#officerHome .qr-card button{grid-column:1/3;grid-row:3;width:100%!important;min-height:43px!important;margin:13px 0 0!important;padding:8px 15px!important;display:flex!important;align-items:center;justify-content:center;gap:8px;border:0!important;border-radius:999px!important;background:var(--login-green)!important;color:#fff!important;font-size:10px!important;font-weight:900!important;letter-spacing:.7px;box-shadow:none!important}
+#officerHome .qr-card button span,#officerHome .continue-btn span{display:inline-flex;width:22px;height:22px;align-items:center;justify-content:center;border-radius:50%;background:var(--login-gold);color:#123b2c;font-size:12px}
+#officerHome .qr-note{display:flex;gap:8px;align-items:flex-start;margin-top:14px;color:#687870}
+#officerHome .qr-note span{flex:0 0 17px;width:17px;height:17px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:#e4f6ee;color:#008154;font-size:10px;font-weight:900}
+#officerHome .qr-note p{margin:0!important;font-size:9px!important;line-height:1.5!important}
+#officerHome .manual-panel select,#officerHome .manual-panel input{display:block;width:100%!important;min-height:47px!important;margin:0 0 12px!important;padding:0 15px!important;border:1px solid rgba(255,255,255,.72)!important;border-radius:11px!important;background:#fff!important;color:#163b2e!important;font-size:11px!important;box-shadow:none!important}
+#officerHome .manual-panel input::placeholder{color:#74817b;opacity:1}
+#officerHome .manual-panel select:focus,#officerHome .manual-panel input:focus{outline:none!important;border-color:#fff!important;box-shadow:0 0 0 3px rgba(255,255,255,.12)!important}
+#officerHome .monthly-period-fields{width:100%!important;margin:0 0 12px!important;padding:12px!important;border:1px solid rgba(255,255,255,.35)!important;border-radius:11px!important;background:rgba(255,255,255,.08)!important;color:#fff!important}
+#officerHome .monthly-period-fields label{display:block!important;margin:0 0 5px!important;color:#fff!important;font-size:9px!important}
+#officerHome .monthly-period-fields select{min-height:38px!important;margin-bottom:9px!important}.monthly-period-fields select:last-child{margin-bottom:0!important}
+#officerHome .continue-btn{width:100%!important;min-height:47px!important;margin:0!important;padding:8px 15px!important;display:flex!important;align-items:center;justify-content:center;gap:9px;border:0!important;border-radius:999px!important;background:var(--login-gold)!important;color:#004d2c!important;font-size:10px!important;font-weight:950!important;letter-spacing:.8px;box-shadow:none!important}
+#officerHome #message{margin-top:9px!important;color:#fff!important;font-size:10px!important}
+#officerHome .sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+#officerHome>.admin-footer{width:min(1120px,100%);margin:18px auto 0!important;color:rgba(255,255,255,.92)!important}#officerHome>.admin-footer .admin-footer-inner{width:100%}
+@media(max-width:700px){
+#officerHome.officer-page{padding:0;background:linear-gradient(135deg,transparent 0 42%,rgba(40,201,107,.96) 42% 61%,transparent 61%),linear-gradient(135deg,#005b36 0%,#006f43 52%,#005a35 100%)}
+#officerHome .officer-main{width:100%}#officerHome .officer-card{border-radius:0!important;box-shadow:none!important}
+#officerHome .officer-brand{min-height:97px;padding:13px 82px 10px 70px!important}#officerHome .officer-logo{left:14px;top:14px;width:44px!important;height:45px!important;padding:3px!important;border-radius:3px}
+#officerHome .officer-kicker{font-size:6.5px;letter-spacing:1.25px;margin-bottom:4px}#officerHome .officer-brand .title{font-size:18px!important;margin-bottom:4px!important}#officerHome .officer-brand p{font-size:7.5px!important}#officerHome #loggedOfficer{margin-top:4px!important;padding:3px 6px!important;font-size:6.5px!important}
+#officerHome .officer-logout{right:12px!important;top:19px!important;min-height:28px!important;padding:5px 9px!important;font-size:6.5px!important}
+#officerHome .portal-grid{display:block;min-height:0}#officerHome .qr-panel{padding:24px 21px 25px}#officerHome .manual-panel{padding:23px 21px 28px}
+#officerHome .section-kicker{font-size:7px;letter-spacing:1.4px;margin-bottom:9px}#officerHome .qr-panel h2,#officerHome .manual-panel h2{font-size:23px!important;margin-bottom:7px!important}#officerHome .section-description{font-size:9px!important;line-height:1.45!important;margin-bottom:17px!important}
+#officerHome .qr-card{padding:13px!important;grid-template-columns:52px 1fr;column-gap:12px}#officerHome .qr-image-circle{width:52px!important;height:52px!important}#officerHome .qr-image-circle img{width:38px!important;height:38px!important}#officerHome .qr-card-copy h3{font-size:12px!important}#officerHome .qr-card-copy p{font-size:7.5px!important}#officerHome .qr-card button{min-height:42px!important;margin-top:11px!important;font-size:8px!important}
+#officerHome .qr-note{margin-top:11px}#officerHome .qr-note p{font-size:7.5px!important}#officerHome .qr-note span{width:15px;height:15px;flex-basis:15px;font-size:9px}
+#officerHome .manual-panel select,#officerHome .manual-panel input{min-height:46px!important;margin-bottom:10px!important;border-radius:10px!important;font-size:10px!important}#officerHome .continue-btn{min-height:45px!important;font-size:9px!important}#officerHome .continue-btn span{width:20px;height:20px;font-size:10px}#officerHome #message{font-size:8px!important}
+#officerHome>.admin-footer{margin:0!important;padding:8px 8px 11px!important;font-size:7px!important}
+}
+@media(max-width:390px){#officerHome .officer-brand{padding-left:64px!important;padding-right:76px!important}#officerHome .officer-brand .title{font-size:17px!important}#officerHome .officer-logo{left:11px;width:41px!important;height:42px!important}#officerHome .officer-logout{right:9px!important;font-size:6px!important;padding:5px 7px!important}#officerHome .qr-panel{padding-left:18px;padding-right:18px}#officerHome .manual-panel{padding-left:18px;padding-right:18px}}
+</style>
+
+<style id="officer-home-final-design">
+/* =========================================================
+   FINAL NSA WAWM OFFICER HOME
+   Match the approved reference layout.
+   Visual layer only. Existing application JavaScript remains.
+   ========================================================= */
+#officerHome.officer-page{
+  min-height:100vh !important;
+  min-height:100dvh !important;
+  width:100% !important;
+  margin:0 !important;
+  padding:22px 0 18px !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  background:
+    linear-gradient(135deg,transparent 0 42%,rgba(40,201,107,.96) 42% 61%,transparent 61%),
+    linear-gradient(135deg,#005b36 0%,#006f43 52%,#005a35 100%) !important;
+  color:#123b2c !important;
+  font-family:Inter,Roboto,"Segoe UI",Arial,sans-serif !important;
+  overflow-x:hidden !important;
+}
+
+#officerHome .officer-main{
+  width:min(1120px,calc(100% - 40px)) !important;
+  margin:0 auto !important;
+  padding:0 !important;
+  flex:0 0 auto !important;
+}
+
+#officerHome .officer-card{
+  width:100% !important;
+  margin:0 !important;
+  padding:0 !important;
+  border:0 !important;
+  border-radius:16px !important;
+  overflow:hidden !important;
+  background:#fff !important;
+  box-shadow:0 18px 42px rgba(0,35,20,.22) !important;
+}
+
+/* HEADER */
+#officerHome .officer-brand{
+  position:relative !important;
+  min-height:83px !important;
+  height:83px !important;
+  width:100% !important;
+  padding:14px 120px 12px 119px !important;
+  display:flex !important;
+  align-items:center !important;
+  background:#28c96b !important;
+  color:#fff !important;
+  text-align:left !important;
+  overflow:hidden !important;
+  clip-path:none !important;
+  border:0 !important;
+}
+
+#officerHome .officer-brand:before{
+  content:"" !important;
+  position:absolute !important;
+  width:320px !important;
+  height:320px !important;
+  left:-215px !important;
+  top:-205px !important;
+  border:1px solid rgba(255,255,255,.11) !important;
+  border-radius:50% !important;
+  box-shadow:0 0 0 32px rgba(255,255,255,.025),0 0 0 64px rgba(255,255,255,.018) !important;
+}
+
+#officerHome .officer-brand:after{
+  content:"" !important;
+  position:absolute !important;
+  width:260px !important;
+  height:260px !important;
+  right:-168px !important;
+  bottom:-186px !important;
+  border:1px solid rgba(255,255,255,.12) !important;
+  border-radius:50% !important;
+}
+
+#officerHome .officer-logo{
+  position:absolute !important;
+  left:28px !important;
+  top:9px !important;
+  width:74px !important;
+  height:74px !important;
+  padding:5px !important;
+  margin:0 !important;
+  object-fit:contain !important;
+  display:block !important;
+  background:#fff !important;
+  border-radius:4px !important;
+  z-index:2 !important;
+}
+
+#officerHome .officer-brand-copy{
+  position:relative !important;
+  z-index:2 !important;
+  min-width:0 !important;
+}
+
+#officerHome .officer-kicker,
+#officerHome .section-kicker{
+  font-size:9px !important;
+  font-weight:900 !important;
+  letter-spacing:1.75px !important;
+  line-height:1.2 !important;
+}
+
+#officerHome .officer-kicker{
+  margin:0 0 5px !important;
+  color:#fff !important;
+}
+
+#officerHome .officer-brand .title{
+  margin:0 0 3px !important;
+  color:#fff !important;
+  font-size:clamp(25px,3vw,32px) !important;
+  line-height:1.04 !important;
+  font-weight:850 !important;
+  letter-spacing:-.5px !important;
+}
+
+#officerHome .officer-brand p{
+  margin:1px 0 !important;
+  color:rgba(255,255,255,.96) !important;
+  font-size:10px !important;
+  line-height:1.3 !important;
+}
+
+/* Keep the authentication state in the DOM, but do not add the badge
+   to the approved visual header. */
+#officerHome #loggedOfficer{
+  display:none !important;
+}
+
+#officerHome .officer-logout{
+  position:absolute !important;
+  right:28px !important;
+  top:31px !important;
+  z-index:4 !important;
+  min-height:35px !important;
+  padding:7px 15px !important;
+  margin:0 !important;
+  border:1px solid rgba(255,255,255,.62) !important;
+  border-radius:999px !important;
+  background:transparent !important;
+  color:#fff !important;
+  font-size:9px !important;
+  font-weight:900 !important;
+  letter-spacing:.7px !important;
+  box-shadow:none !important;
+}
+
+/* MAIN TWO-COLUMN AREA */
+#officerHome .portal-grid{
+  display:grid !important;
+  grid-template-columns:1fr 1fr !important;
+  min-height:420px !important;
+  height:420px !important;
+}
+
+#officerHome .qr-panel{
+  min-width:0 !important;
+  padding:40px 38px 34px !important;
+  background:#fff !important;
+}
+
+#officerHome .manual-panel{
+  min-width:0 !important;
+  padding:40px 38px 34px !important;
+  background:#006b3f !important;
+  color:#fff !important;
+}
+
+#officerHome .section-kicker{
+  margin:0 0 12px !important;
+  color:#007047 !important;
+}
+
+#officerHome .manual-panel .section-kicker{
+  color:#bdebd3 !important;
+}
+
+#officerHome .qr-panel h2,
+#officerHome .manual-panel h2{
+  margin:0 0 9px !important;
+  font-size:clamp(25px,3vw,33px) !important;
+  line-height:1.1 !important;
+  font-weight:850 !important;
+  letter-spacing:-.5px !important;
+}
+
+#officerHome .qr-panel h2{color:#123b2c !important}
+#officerHome .manual-panel h2{color:#fff !important}
+
+#officerHome .section-description{
+  margin:0 0 22px !important;
+  max-width:530px !important;
+  color:#5f716a !important;
+  font-size:12px !important;
+  line-height:1.55 !important;
+}
+
+#officerHome .manual-panel .section-description{
+  color:rgba(255,255,255,.84) !important;
+}
+
+/* QR CARD: icon LEFT, title/text RIGHT, button BELOW BOTH */
+#officerHome .qr-card{
+  width:100% !important;
+  margin:0 !important;
+  padding:18px !important;
+  display:grid !important;
+  grid-template-columns:64px minmax(0,1fr) !important;
+  grid-template-rows:auto auto auto !important;
+  column-gap:15px !important;
+  row-gap:3px !important;
+  align-items:center !important;
+  border:1px solid #d9e9e1 !important;
+  border-radius:15px !important;
+  background:#fff !important;
+  box-shadow:0 9px 20px rgba(0,48,29,.08) !important;
+}
+
+#officerHome .qr-image-circle{
+  grid-column:1 !important;
+  grid-row:1/3 !important;
+  width:64px !important;
+  height:64px !important;
+  margin:0 !important;
+  border-radius:50% !important;
+  background:#e2f5ed !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+}
+
+#officerHome .qr-image-circle img{
+  width:45px !important;
+  height:45px !important;
+  object-fit:contain !important;
+}
+
+#officerHome .qr-card-copy{
+  grid-column:2 !important;
+  grid-row:1/3 !important;
+  min-width:0 !important;
+}
+
+#officerHome .qr-card-copy h3{
+  margin:0 !important;
+  color:#123b2c !important;
+  font-size:15px !important;
+  line-height:1.2 !important;
+  font-weight:850 !important;
+}
+
+#officerHome .qr-card-copy p{
+  margin:4px 0 0 !important;
+  color:#66766f !important;
+  font-size:9px !important;
+  line-height:1.4 !important;
+}
+
+#officerHome .qr-card button{
+  grid-column:1/3 !important;
+  grid-row:3 !important;
+  width:100% !important;
+  min-height:43px !important;
+  margin:13px 0 0 !important;
+  padding:8px 15px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:8px !important;
+  border:0 !important;
+  border-radius:999px !important;
+  background:#006b3f !important;
+  color:#fff !important;
+  font-size:10px !important;
+  font-weight:900 !important;
+  letter-spacing:.7px !important;
+  box-shadow:none !important;
+}
+
+#officerHome .qr-card button span,
+#officerHome .continue-btn span{
+  display:inline-flex !important;
+  width:22px !important;
+  height:22px !important;
+  align-items:center !important;
+  justify-content:center !important;
+  border-radius:50% !important;
+  background:#ffdc00 !important;
+  color:#123b2c !important;
+  font-size:12px !important;
+}
+
+/* QR NOTE */
+#officerHome .qr-note{
+  display:flex !important;
+  gap:8px !important;
+  align-items:flex-start !important;
+  margin-top:14px !important;
+  color:#687870 !important;
+}
+
+#officerHome .qr-note span{
+  flex:0 0 17px !important;
+  width:17px !important;
+  height:17px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  border-radius:50% !important;
+  background:#e4f6ee !important;
+  color:#008154 !important;
+  font-size:10px !important;
+  font-weight:900 !important;
+}
+
+#officerHome .qr-note p{
+  margin:0 !important;
+  font-size:9px !important;
+  line-height:1.5 !important;
+}
+
+/* MANUAL ENTRY */
+#officerHome .manual-panel select,
+#officerHome .manual-panel input{
+  display:block !important;
+  width:100% !important;
+  min-height:47px !important;
+  margin:0 0 12px !important;
+  padding:0 15px !important;
+  border:1px solid rgba(255,255,255,.72) !important;
+  border-radius:11px !important;
+  background:#fff !important;
+  color:#163b2e !important;
+  font-size:11px !important;
+  box-shadow:none !important;
+}
+
+#officerHome .manual-panel input::placeholder{
+  color:#74817b !important;
+  opacity:1 !important;
+}
+
+#officerHome .manual-panel select:focus,
+#officerHome .manual-panel input:focus{
+  outline:none !important;
+  border-color:#fff !important;
+  box-shadow:0 0 0 3px rgba(255,255,255,.12) !important;
+}
+
+#officerHome .monthly-period-fields{
+  width:100% !important;
+  margin:0 0 12px !important;
+  padding:12px !important;
+  border:1px solid rgba(255,255,255,.35) !important;
+  border-radius:11px !important;
+  background:rgba(255,255,255,.08) !important;
+  color:#fff !important;
+}
+
+#officerHome .monthly-period-fields label{
+  display:block !important;
+  margin:0 0 5px !important;
+  color:#fff !important;
+  font-size:9px !important;
+}
+
+#officerHome .monthly-period-fields select{
+  min-height:38px !important;
+  margin-bottom:9px !important;
+}
+
+#officerHome .monthly-period-fields select:last-child{
+  margin-bottom:0 !important;
+}
+
+#officerHome .continue-btn{
+  width:100% !important;
+  min-height:47px !important;
+  margin:0 !important;
+  padding:8px 15px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:9px !important;
+  border:0 !important;
+  border-radius:999px !important;
+  background:#ffdc00 !important;
+  color:#004d2c !important;
+  font-size:10px !important;
+  font-weight:950 !important;
+  letter-spacing:.8px !important;
+  box-shadow:none !important;
+}
+
+#officerHome #message{
+  margin-top:9px !important;
+  color:#fff !important;
+  font-size:10px !important;
+}
+
+/* FOOTER */
+#officerHome > .admin-footer{
+  width:min(1120px,calc(100% - 40px)) !important;
+  margin:0 auto !important;
+  margin-top:auto !important;
+  padding:0 0 0 !important;
+  color:rgba(255,255,255,.92) !important;
+  border-top:1px solid rgba(255,255,255,.48) !important;
+  font-size:10px !important;
+}
+
+#officerHome > .admin-footer .admin-footer-inner{
+  width:100% !important;
+  padding-top:12px !important;
+  display:flex !important;
+  justify-content:space-between !important;
+  align-items:center !important;
+  gap:12px !important;
+}
+
+#officerHome > .admin-footer .admin-footer-brand{
+  display:flex !important;
+  align-items:center !important;
+  gap:9px !important;
+}
+
+#officerHome > .admin-footer .admin-footer-brand img{
+  width:30px !important;
+  height:30px !important;
+  object-fit:contain !important;
+  padding:3px !important;
+  background:#fff !important;
+  border:1px solid rgba(255,255,255,.35) !important;
+  border-radius:7px !important;
+}
+
+/* MOBILE */
+@media(max-width:700px){
+  #officerHome.officer-page{
+    min-height:100vh !important;
+    min-height:100dvh !important;
+    padding:8px 8px 11px !important;
+    align-items:stretch !important;
+    background:
+      linear-gradient(135deg,transparent 0 42%,rgba(40,201,107,.96) 42% 61%,transparent 61%),
+      linear-gradient(135deg,#005b36 0%,#006f43 52%,#005a35 100%) !important;
+  }
+
+  #officerHome .officer-main{
+    width:100% !important;
+    margin:0 !important;
+  }
+
+  #officerHome .officer-card{
+    border-radius:12px !important;
+    box-shadow:none !important;
+  }
+
+  #officerHome .officer-brand{
+    min-height:89px !important;
+    height:89px !important;
+    padding:12px 72px 10px 62px !important;
+  }
+
+  #officerHome .officer-logo{
+    left:11px !important;
+    top:13px !important;
+    width:43px !important;
+    height:44px !important;
+    padding:3px !important;
+  }
+
+  #officerHome .officer-kicker{
+    font-size:6px !important;
+    letter-spacing:1.15px !important;
+    margin-bottom:4px !important;
+  }
+
+  #officerHome .officer-brand .title{
+    font-size:17px !important;
+    margin-bottom:3px !important;
+  }
+
+  #officerHome .officer-brand p{
+    font-size:7px !important;
+    line-height:1.3 !important;
+  }
+
+  #officerHome .officer-logout{
+    right:9px !important;
+    top:20px !important;
+    min-height:28px !important;
+    padding:5px 8px !important;
+    font-size:6px !important;
+  }
+
+  #officerHome .portal-grid{
+    display:block !important;
+    min-height:0 !important;
+    height:auto !important;
+  }
+
+  #officerHome .qr-panel{
+    padding:20px 13px 22px !important;
+  }
+
+  #officerHome .manual-panel{
+    padding:19px 13px 27px !important;
+  }
+
+  #officerHome .section-kicker{
+    font-size:7px !important;
+    letter-spacing:1.35px !important;
+    margin-bottom:9px !important;
+  }
+
+  #officerHome .qr-panel h2,
+  #officerHome .manual-panel h2{
+    font-size:22px !important;
+    margin-bottom:7px !important;
+  }
+
+  #officerHome .section-description{
+    font-size:9px !important;
+    line-height:1.45 !important;
+    margin-bottom:16px !important;
+  }
+
+  #officerHome .qr-card{
+    padding:13px !important;
+    grid-template-columns:52px minmax(0,1fr) !important;
+    column-gap:12px !important;
+  }
+
+  #officerHome .qr-image-circle{
+    width:52px !important;
+    height:52px !important;
+  }
+
+  #officerHome .qr-image-circle img{
+    width:38px !important;
+    height:38px !important;
+  }
+
+  #officerHome .qr-card-copy h3{
+    font-size:12px !important;
+  }
+
+  #officerHome .qr-card-copy p{
+    font-size:7.5px !important;
+  }
+
+  #officerHome .qr-card button{
+    min-height:42px !important;
+    margin-top:11px !important;
+    font-size:8px !important;
+  }
+
+  #officerHome .qr-note{
+    margin-top:11px !important;
+  }
+
+  #officerHome .qr-note p{
+    font-size:7.5px !important;
+  }
+
+  #officerHome .qr-note span{
+    width:15px !important;
+    height:15px !important;
+    flex-basis:15px !important;
+    font-size:9px !important;
+  }
+
+  #officerHome .manual-panel select,
+  #officerHome .manual-panel input{
+    min-height:46px !important;
+    margin-bottom:10px !important;
+    border-radius:10px !important;
+    font-size:10px !important;
+  }
+
+  #officerHome .continue-btn{
+    min-height:45px !important;
+    font-size:9px !important;
+  }
+
+  #officerHome .continue-btn span{
+    width:20px !important;
+    height:20px !important;
+    font-size:10px !important;
+  }
+
+  #officerHome #message{
+    font-size:8px !important;
+  }
+
+  #officerHome > .admin-footer{
+    width:100% !important;
+    margin-top:auto !important;
+    padding:8px 0 0 !important;
+    font-size:7px !important;
+    border-top:1px solid rgba(255,255,255,.48) !important;
+  }
+
+  #officerHome > .admin-footer .admin-footer-inner{
+    padding-top:8px !important;
+    display:block !important;
+    line-height:1.8 !important;
+  }
+
+  #officerHome > .admin-footer .admin-footer-brand{
+    display:block !important;
+  }
+
+  #officerHome > .admin-footer .admin-footer-brand img{
+    display:none !important;
+  }
+}
+</style>
+
 </head>
 
 <body>
 <div id="officerHome" class="officer-page" style="display:none;">
   <main class="officer-main">
     <div class="officer-card">
-      <button onclick="logout()" class="officer-logout">⇥ &nbsp; LOGOUT</button>
-      <div class="officer-brand">
-        <img src="https://lh3.googleusercontent.com/d/10gIO9KpoqufMr8xWVh6ZfOBgDRU-KUN3" class="officer-logo" alt="NSA logo">
-        <h1 class="title">NSA Personnel Registration</h1>
-        <p>Wassa Amenfi West Municipal Secretariat</p>
-        <p>Officer Portal</p>
-        <p id="loggedOfficer"></p>
-      </div>
-      <section class="qr-card">
-        <div class="qr-image-circle">
-          <!-- Replace the SVG below with an uploaded image URL when you have the preferred artwork. -->
-          <img id="qrScanIllustration" alt="QR code scanning illustration" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='none' stroke='%23006b43' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 35V18a3 3 0 0 1 3-3h17M65 15h17a3 3 0 0 1 3 3v17M85 65v17a3 3 0 0 1-3 3H65M35 85H18a3 3 0 0 1-3-3V65'/%3E%3Cpath d='M27 27h16v16H27zM57 27h16v16H57zM27 57h16v16H27zM57 57h5v5h-5zM68 57h5v16h-5zM57 68h5v5h-5z'/%3E%3Cpath d='M47 50h6M50 47v6'/%3E%3C/svg%3E">
+      <header class="officer-brand">
+        <img src="./assets/my_logo.png" class="officer-logo" alt="National Service Authority logo">
+        <div class="officer-brand-copy">
+          <div class="officer-kicker">NATIONAL SERVICE AUTHORITY</div>
+          <h1 class="title">NSA Personnel Registration</h1>
+          <p>Wassa Amenfi West Municipal Secretariat · Officer Portal</p>
+          <p id="loggedOfficer"></p>
         </div>
-        <h3>Scan QR Code</h3>
-        <p>Scan official NSA personnel QR code.</p>
-        <button onclick="openQRScanner()" type="button">📷 &nbsp; OPEN CAMERA</button>
-      </section>
-      <h3 class="portal-or">OR</h3>
-      <select id="service" onchange="handleServiceChange()" aria-label="Select service">
-        <option value="registration">☰ &nbsp; Registration</option>
-        <option value="monthly">Monthly Evaluation Submission</option>
-        <option value="annual">Annual Evaluation Submission</option>
-      </select>
-      <input id="nss" placeholder="♟  Enter NSS Number" autocomplete="off" aria-label="Enter NSS Number">
-      <div id="monthlyPeriodFields" class="monthly-period-fields" style="display:none;">
-        <label for="evaluationMonth" style="display:block;margin-bottom:5px;">Evaluation Month</label>
-        <select id="evaluationMonth" style="width:100%;margin-bottom:10px;">
-          <option value="1">January</option><option value="2">February</option>
-          <option value="3">March</option><option value="4">April</option>
-          <option value="5">May</option><option value="6">June</option>
-          <option value="7">July</option><option value="8">August</option>
-          <option value="9">September</option><option value="10">October</option>
-          <option value="11">November</option><option value="12">December</option>
-        </select>
-        <label for="evaluationYear" style="display:block;margin-bottom:5px;">Evaluation Year</label>
-        <select id="evaluationYear" style="width:100%;"></select>
+        <button onclick="logout()" class="officer-logout" type="button">↪ &nbsp; LOGOUT</button>
+      </header>
+
+      <div class="portal-grid">
+        <section class="qr-panel" aria-labelledby="qrTitle">
+          <div class="section-kicker">QUICK ACTION</div>
+          <h2 id="qrTitle">Scan an official QR code</h2>
+          <p class="section-description">Use your camera to open registration or evaluation directly from an official NSA QR code.</p>
+          <div class="qr-card">
+            <div class="qr-image-circle">
+              <img id="qrScanIllustration" alt="QR code scanning illustration" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='none' stroke='%23006b43' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 35V18a3 3 0 0 1 3-3h17M65 15h17a3 3 0 0 1 3 3v17M85 65v17a3 3 0 0 1-3 3H65M35 85H18a3 3 0 0 1-3-3V65'/%3E%3Cpath d='M27 27h16v16H27zM57 27h16v16H57zM27 57h16v16H27zM57 57h5v5h-5zM68 57h5v16h-5zM57 68h5v5h-5z'/%3E%3Cpath d='M47 50h6M50 47v6'/%3E%3C/svg%3E">
+            </div>
+            <div class="qr-card-copy">
+              <h3>Scan QR Code</h3>
+              <p>Scan an official NSA registration or evaluation QR code.</p>
+            </div>
+            <button onclick="openQRScanner()" type="button">OPEN CAMERA <span aria-hidden="true">→</span></button>
+          </div>
+          <div class="qr-note">
+            <span aria-hidden="true">i</span>
+            <p>Keep the complete QR code inside the camera frame. The portal will route you to the appropriate workflow after scanning.</p>
+          </div>
+        </section>
+
+        <section class="manual-panel" aria-labelledby="manualTitle">
+          <div class="section-kicker">MANUAL ENTRY</div>
+          <h2 id="manualTitle">Enter details manually</h2>
+          <p class="section-description">Choose a service and enter the personnel NSS number to continue.</p>
+          <label class="sr-only" for="service">Choose service</label>
+          <select id="service" onchange="handleServiceChange()" aria-label="Select service">
+            <option value="registration">Registration</option>
+            <option value="monthly">Monthly Evaluation Submission</option>
+            <option value="annual">Annual Evaluation Submission</option>
+          </select>
+          <label class="sr-only" for="nss">NSS Number</label>
+          <input id="nss" placeholder="Enter NSS Number" autocomplete="off" aria-label="Enter NSS Number">
+          <div id="monthlyPeriodFields" class="monthly-period-fields" style="display:none;">
+            <label for="evaluationMonth">Evaluation Month</label>
+            <select id="evaluationMonth">
+              <option value="1">January</option><option value="2">February</option><option value="3">March</option><option value="4">April</option>
+              <option value="5">May</option><option value="6">June</option><option value="7">July</option><option value="8">August</option>
+              <option value="9">September</option><option value="10">October</option><option value="11">November</option><option value="12">December</option>
+            </select>
+            <label for="evaluationYear">Evaluation Year</label>
+            <select id="evaluationYear"></select>
+          </div>
+          <button onclick="continuePortal()" class="continue-btn" type="button">CONTINUE <span aria-hidden="true">→</span></button>
+          <div id="message"></div>
+        </section>
       </div>
-      <button onclick="continuePortal()" class="continue-btn" type="button">→ &nbsp; CONTINUE</button>
-      <div id="message"></div>
     </div>
   </main>
-  <footer class="admin-footer"><div class="admin-footer-inner"><div class="admin-footer-brand"><img data-brand-logo src="https://lh3.googleusercontent.com/d/10gIO9KpoqufMr8xWVh6ZfOBgDRU-KUN3" alt="NSA WAWM logo"><div><strong id="footerSystemName">NSA Personnel Management System</strong><div id="footerInstitution">Wassa Amenfi West Municipal Secretariat</div></div></div><div>Secure personnel administration · © <span id="footerYear">2026</span> NSA WAWM</div></div></footer>
+
+  <footer class="admin-footer">
+    <div class="admin-footer-inner">
+      <div class="admin-footer-brand">
+        <img data-brand-logo src="./assets/my_logo.png" alt="NSA WAWM logo">
+        <div><strong id="footerSystemName">NSA Personnel Management System</strong><div id="footerInstitution">Wassa Amenfi West Municipal Secretariat</div></div>
+      </div>
+      <div>Secure personnel administration · © <span id="footerYear">2026</span> NSA WAWM</div>
+    </div>
+  </footer>
 </div>
 <div id="duplicateModal"
      role="dialog"

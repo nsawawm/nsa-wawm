@@ -1,0 +1,1506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>
+NSA WAWM Officer Portal
+</title>
+
+<?!= include('style'); ?>
+
+<?!= include('session'); ?>
+
+<?!= include('router'); ?>
+
+<?!= include('qr-router'); ?>
+
+<?!= include('auth'); ?>
+
+<?!= include('alert'); ?>
+
+<?!= include('load'); ?>
+
+
+<style>
+:root{--nsa-green:#006b3f;--nsa-deep:#004d2c;--nsa-gold:#ffd500;--nsa-ink:#064d34;--nsa-muted:#5c6878;--nsa-line:#dce5ed}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:Roboto,"Segoe UI",Arial,sans-serif;color:#15212b}
+body{background:radial-gradient(ellipse at 0% 92%,rgba(190,225,216,.65),transparent 24%),radial-gradient(ellipse at 100% 94%,rgba(190,225,216,.65),transparent 25%),linear-gradient(180deg,#f6faf9 0%,#f2f7f8 68%,#fff 100%)}
+button,input,select{font:inherit}
+button{cursor:pointer}
+.officer-page{min-height:100vh;display:flex;flex-direction:column!important;background:transparent!important;width:100%;padding:0!important;margin:0!important}
+.officer-main{width:100%;max-width:900px;margin:0 auto;flex:1;padding:0 0 42px!important}
+.officer-card{width:100%;padding:0!important;margin:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;position:static!important}
+.officer-logout{position:absolute;z-index:4;right:4%;top:24px;border:0!important;border-radius:15px!important;background:#ffd500!important;padding:17px 21px!important;color:#111!important;font-weight:800!important;font-size:16px!important;box-shadow:none!important}
+.officer-brand{min-height:400px;position:relative;overflow:hidden;text-align:center;color:#fff;padding:26px 22px 45px!important;background:radial-gradient(circle at 0% 0%,rgba(0,110,68,.2) 0 22%,transparent 22.2%),linear-gradient(120deg,#006b43 0%,#005b37 48%,#00683e 100%)!important;border-bottom:8px solid #ffdb00;clip-path:polygon(0 0,100% 0,100% 89%,85% 95%,65% 100%,40% 100%,17% 95%,0 89%);margin:0!important}
+.officer-brand:before{content:"";position:absolute;width:360px;height:240px;left:-180px;top:-112px;border-radius:50%;border:1px solid rgba(255,255,255,.07);box-shadow:0 0 0 35px rgba(255,255,255,.025),0 0 0 70px rgba(255,255,255,.018)}
+.officer-brand:after{content:"";position:absolute;left:-4%;right:-4%;bottom:-29px;height:55px;background:#ffdf00;transform:rotate(-1deg);z-index:0}
+.officer-logo{width:190px!important;height:130px!important;object-fit:contain!important;display:block;margin:0 auto 18px!important;position:relative;z-index:1}
+.officer-brand h1.title{font-size:clamp(28px,5.4vw,44px)!important;line-height:1.13!important;margin:2px 0 18px!important;font-weight:800!important;letter-spacing:-.5px}
+.officer-brand p{font-size:clamp(16px,3.3vw,27px)!important;line-height:1.35;margin:0 0 12px!important;color:white!important}
+.officer-brand #loggedOfficer{font-size:clamp(15px,3vw,23px)!important;margin:0!important}
+.officer-brand #loggedOfficer strong{color:#ffdc00}
+.qr-card{margin:18px auto 0!important;width:calc(100% - 36px);border:1px solid #d9ebe6!important;border-radius:22px!important;background:rgba(255,255,255,.92)!important;box-shadow:0 10px 24px rgba(28,74,66,.08)!important;padding:26px 24px 28px!important;display:grid;grid-template-columns:clamp(88px,22vw,132px) minmax(0,1fr);grid-template-rows:auto auto auto;column-gap:20px;row-gap:7px;align-items:center}
+.qr-card h3{grid-column:2;grid-row:1;font-size:clamp(23px,4.7vw,36px)!important;color:#064d34!important;margin:0!important;line-height:1.15;font-weight:800!important;letter-spacing:-.4px;text-align:left}
+.qr-card p{grid-column:2;grid-row:2;align-self:start;font-size:clamp(15px,3.2vw,21px)!important;line-height:1.35;color:#48586a!important;margin:0!important;padding:0!important}
+.qr-image-circle{grid-column:1;grid-row:1/3;width:100%;aspect-ratio:1/1;max-width:132px;border-radius:50%;background:#dff4eb;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.qr-image-circle img{display:block;width:72%;height:72%;object-fit:contain}
+.qr-card button{grid-column:1/3;grid-row:3;width:100%;border:0!important;border-radius:16px!important;background:linear-gradient(100deg,#ffdc00,#ffca00)!important;color:#073f2d!important;font-size:clamp(19px,3.6vw,25px)!important;font-weight:850!important;min-height:70px;margin-top:16px!important;box-shadow:none!important}
+.portal-or{display:flex;align-items:center;gap:30px;color:#075338;font-size:32px!important;font-weight:800!important;justify-content:center;margin:27px 31px 29px!important}
+.portal-or:before,.portal-or:after{content:"";height:2px;background:#b5c9c6;flex:1}
+#service,#nss,.monthly-period-fields{display:block;width:calc(100% - 36px)!important;margin-left:auto!important;margin-right:auto!important;border:2px solid var(--nsa-line)!important;border-radius:17px!important;background:rgba(255,255,255,.98)!important;box-shadow:0 4px 10px rgba(34,69,90,.05)!important;color:#111923!important;min-height:82px;padding:0 24px!important;font-size:clamp(20px,3.4vw,27px)!important}
+#service{margin-bottom:22px!important;appearance:auto}
+#nss{margin-bottom:31px!important;padding-left:32px!important}
+#nss::placeholder{color:#647184;opacity:1}
+.monthly-period-fields{height:auto;min-height:0;padding:20px 24px!important;margin-bottom:22px!important;font-size:16px!important}
+.monthly-period-fields select{min-height:48px;border:1px solid #dce5ed;border-radius:10px;padding:8px 12px;font-size:17px;background:white}
+.continue-btn{width:calc(100% - 62px)!important;display:flex;align-items:center;justify-content:center;min-height:103px;margin:0 auto!important;border:0!important;border-radius:20px!important;background:linear-gradient(100deg,#ffdc00,#ffca00)!important;color:#073f2d!important;font-size:clamp(23px,3.6vw,29px)!important;font-weight:850!important;box-shadow:none!important}
+#message{width:calc(100% - 62px);margin:12px auto 0}
+.officer-page footer{margin-top:auto}
+@media(max-width:600px){
+ .officer-brand{min-height:400px;padding-top:24px!important}
+ .officer-logout{top:24px;right:4%;padding:16px 17px!important;font-size:15px!important}
+ .officer-logo{width:185px!important;height:128px!important;margin-top:2px!important;margin-bottom:18px!important}
+ .officer-main{padding-bottom:42px!important}
+ .qr-card{width:calc(100% - 32px);padding:22px 20px 24px!important;grid-template-columns:clamp(82px,22vw,112px) minmax(0,1fr);column-gap:16px}
+ #service,#nss,.monthly-period-fields,.continue-btn,#message{width:calc(100% - 32px)!important}
+ #service,#nss{min-height:84px!important;font-size:22px!important;padding-left:20px!important;padding-right:20px!important}
+ .portal-or{gap:22px;margin:24px 20px 25px!important}
+}
+@media(max-width:390px){
+ .officer-brand{padding-left:12px!important;padding-right:12px!important}
+ .officer-logout{font-size:12px!important;padding:12px!important}
+ .officer-logo{width:145px!important;height:105px!important}
+ .qr-card{width:calc(100% - 24px);padding:18px 14px 20px!important;grid-template-columns:78px minmax(0,1fr);column-gap:12px}
+ .qr-card h3{font-size:22px!important}
+ .qr-card p{font-size:15px!important}
+ .qr-card button{min-height:64px!important;font-size:19px!important}
+ #service,#nss,.monthly-period-fields,.continue-btn,#message{width:calc(100% - 24px)!important}
+ #service,#nss{min-height:78px!important;font-size:20px!important;padding:0 16px!important}
+ #nss{padding-left:18px!important}
+ .continue-btn{font-size:24px!important}
+}
+</style>
+
+</head>
+
+<body>
+<div id="officerHome" class="officer-page" style="display:none;">
+  <main class="officer-main">
+    <div class="officer-card">
+      <button onclick="logout()" class="officer-logout">⇥ &nbsp; LOGOUT</button>
+      <div class="officer-brand">
+        <img src="https://lh3.googleusercontent.com/d/10gIO9KpoqufMr8xWVh6ZfOBgDRU-KUN3" class="officer-logo" alt="NSA logo">
+        <h1 class="title">NSA Personnel Registration</h1>
+        <p>Wassa Amenfi West Municipal Secretariat</p>
+        <p>Officer Portal</p>
+        <p id="loggedOfficer"></p>
+      </div>
+      <section class="qr-card">
+        <div class="qr-image-circle">
+          <!-- Replace the SVG below with an uploaded image URL when you have the preferred artwork. -->
+          <img id="qrScanIllustration" alt="QR code scanning illustration" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='none' stroke='%23006b43' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 35V18a3 3 0 0 1 3-3h17M65 15h17a3 3 0 0 1 3 3v17M85 65v17a3 3 0 0 1-3 3H65M35 85H18a3 3 0 0 1-3-3V65'/%3E%3Cpath d='M27 27h16v16H27zM57 27h16v16H57zM27 57h16v16H27zM57 57h5v5h-5zM68 57h5v16h-5zM57 68h5v5h-5z'/%3E%3Cpath d='M47 50h6M50 47v6'/%3E%3C/svg%3E">
+        </div>
+        <h3>Scan QR Code</h3>
+        <p>Scan official NSA personnel QR code.</p>
+        <button onclick="openQRScanner()" type="button">📷 &nbsp; OPEN CAMERA</button>
+      </section>
+      <h3 class="portal-or">OR</h3>
+      <select id="service" onchange="handleServiceChange()" aria-label="Select service">
+        <option value="registration">☰ &nbsp; Registration</option>
+        <option value="monthly">Monthly Evaluation Submission</option>
+        <option value="annual">Annual Evaluation Submission</option>
+      </select>
+      <input id="nss" placeholder="♟  Enter NSS Number" autocomplete="off" aria-label="Enter NSS Number">
+      <div id="monthlyPeriodFields" class="monthly-period-fields" style="display:none;">
+        <label for="evaluationMonth" style="display:block;margin-bottom:5px;">Evaluation Month</label>
+        <select id="evaluationMonth" style="width:100%;margin-bottom:10px;">
+          <option value="1">January</option><option value="2">February</option>
+          <option value="3">March</option><option value="4">April</option>
+          <option value="5">May</option><option value="6">June</option>
+          <option value="7">July</option><option value="8">August</option>
+          <option value="9">September</option><option value="10">October</option>
+          <option value="11">November</option><option value="12">December</option>
+        </select>
+        <label for="evaluationYear" style="display:block;margin-bottom:5px;">Evaluation Year</label>
+        <select id="evaluationYear" style="width:100%;"></select>
+      </div>
+      <button onclick="continuePortal()" class="continue-btn" type="button">→ &nbsp; CONTINUE</button>
+      <div id="message"></div>
+    </div>
+  </main>
+  <?!= include('footer'); ?>
+</div>
+<div id="duplicateModal"
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="duplicateTitle">
+
+  <div class="duplicate-card">
+
+    <h2 id="duplicateTitle">
+      ⚠ Evaluation Already Submitted
+    </h2>
+
+    <p id="duplicateMessage">
+      A submission already exists for this personnel member
+      and evaluation period.
+    </p>
+
+    <div id="duplicateDetails"></div>
+
+    <p>
+      Do you want to update the existing record or return
+      to the home page without making any changes?
+    </p>
+
+    <div class="duplicate-modal-actions">
+
+      <button
+        type="button"
+        id="duplicateHomeButton"
+        onclick="returnHomeFromDuplicate()">
+        RETURN TO HOME
+      </button>
+
+      <button
+        type="button"
+        id="duplicateUpdateButton"
+        onclick="updateDuplicateSubmission()">
+        UPDATE EXISTING SUBMISSION
+      </button>
+
+    </div>
+
+  </div>
+</div>
+<script>
+
+
+/* =====================================================
+   STATE
+   ===================================================== */
+
+let registrationNSS = "";
+
+let registrationBusy = false;
+
+let qrWindow = null;
+
+
+
+/* =====================================================
+   MONTHLY EVALUATION PERIOD
+   ===================================================== */
+
+function initializeMonthlyPeriodFields(){
+
+
+  const monthElement =
+    document.getElementById(
+      "evaluationMonth"
+    );
+
+
+  const yearElement =
+    document.getElementById(
+      "evaluationYear"
+    );
+
+
+  if(
+    !monthElement ||
+    !yearElement
+  ){
+
+    return;
+
+  }
+
+
+  const now =
+    new Date();
+
+
+  const currentMonth =
+    now.getMonth() + 1;
+
+
+  const currentYear =
+    now.getFullYear();
+
+
+  /* ===================================================
+     DEFAULT MONTH
+     =================================================== */
+
+  monthElement.value =
+    String(
+      currentMonth
+    );
+
+
+  /* ===================================================
+     YEAR OPTIONS
+     Current year through previous 5 years
+     =================================================== */
+
+  yearElement.innerHTML = "";
+
+
+  for(
+    let year = currentYear;
+    year >= currentYear - 5;
+    year--
+  ){
+
+    const option =
+      document.createElement(
+        "option"
+      );
+
+
+    option.value =
+      String(year);
+
+
+    option.textContent =
+      String(year);
+
+
+    yearElement.appendChild(
+      option
+    );
+
+  }
+
+
+  yearElement.value =
+    String(
+      currentYear
+    );
+
+}
+
+
+
+/* =====================================================
+   SERVICE SELECTION
+   ===================================================== */
+
+function handleServiceChange(){
+
+
+  const serviceElement =
+    document.getElementById(
+      "service"
+    );
+
+
+  const periodFields =
+    document.getElementById(
+      "monthlyPeriodFields"
+    );
+
+
+  if(
+    !serviceElement ||
+    !periodFields
+  ){
+
+    return;
+
+  }
+
+
+  const service =
+    serviceElement.value;
+
+
+  if(
+    service === "monthly"
+  ){
+
+    periodFields.style.display =
+      "block";
+
+
+    initializeMonthlyPeriodFields();
+
+  }
+
+  else{
+
+    periodFields.style.display =
+      "none";
+
+  }
+
+}
+
+
+
+/* =====================================================
+   OPEN QR SCANNER
+   ===================================================== */
+
+function openQRScanner(){
+
+  /*
+   * Use the same deployed camera application as the passport and
+   * capture-code workflows, but explicitly select QR scanning mode.
+   * Do not add "noopener": the camera must post the decoded QR back
+   * to this Home page through window.opener.postMessage().
+   */
+  const cameraUrl =
+    "https://nsawawm.github.io/camera-test/?mode=qr-scan";
+
+  if (qrWindow && !qrWindow.closed) {
+    try {
+      qrWindow.focus();
+      notify("The QR scanner is already open. Scan the official NSA QR code.", "success");
+      return;
+    } catch (error) {
+      console.warn("[HOME] Existing QR scanner could not be focused:", error);
+      qrWindow = null;
+    }
+  }
+
+  qrWindow = window.open(cameraUrl, "_blank");
+
+  if (!qrWindow) {
+    qrWindow = null;
+    notify(
+      "The QR camera was blocked by the browser. Allow pop-ups for the NSA WAWM application, then select OPEN CAMERA again.",
+      "error"
+    );
+    return;
+  }
+
+  notify(
+    "QR camera opened. Allow camera access, then scan the official NSA QR code.",
+    "success"
+  );
+}
+
+
+
+/* =====================================================
+   INITIALISE OFFICER HOME
+   ===================================================== */
+
+function initializeOfficerHome(){
+
+
+  console.log(
+    "[HOME] Initializing officer home..."
+  );
+
+
+  try{
+
+
+    const params =
+      new URLSearchParams(
+        window.location.search
+      );
+
+
+    /* =================================================
+       READ PARAMETERS
+
+       This is retained for the home page only.
+       The evaluation pages themselves use
+       google.script.url.getLocation().
+       ================================================= */
+
+    const qrNSS =
+      params.get(
+        "nssNumber"
+      );
+
+
+    const qrType =
+      params.get(
+        "type"
+      );
+
+
+    const qrMonth =
+      params.get(
+        "month"
+      );
+
+
+    const qrYear =
+      params.get(
+        "year"
+      );
+
+
+
+    /* =================================================
+       PREFILL NSS
+       ================================================= */
+
+    if(qrNSS){
+
+      const nssInput =
+        document.getElementById(
+          "nss"
+        );
+
+
+      if(nssInput){
+
+        nssInput.value =
+          qrNSS;
+
+      }
+
+    }
+
+
+
+    /* =================================================
+       SET SERVICE FROM URL
+       ================================================= */
+
+    if(qrType){
+
+      const serviceElement =
+        document.getElementById(
+          "service"
+        );
+
+
+      if(serviceElement){
+
+        const normalizedType =
+          String(qrType)
+            .trim()
+            .toLowerCase();
+
+
+        if(
+          normalizedType === "monthly"
+        ){
+
+          serviceElement.value =
+            "monthly";
+
+
+          handleServiceChange();
+
+        }
+
+
+        else if(
+          normalizedType === "annual"
+        ){
+
+          serviceElement.value =
+            "annual";
+
+
+          handleServiceChange();
+
+        }
+
+
+        else{
+
+          serviceElement.value =
+            "registration";
+
+
+          handleServiceChange();
+
+        }
+
+      }
+
+    }
+
+
+
+    /* =================================================
+       SET MONTH/YEAR FROM QR
+       ================================================= */
+
+    if(
+      String(qrType || "")
+        .trim()
+        .toLowerCase()
+      ===
+      "monthly"
+    ){
+
+      const monthElement =
+        document.getElementById(
+          "evaluationMonth"
+        );
+
+
+      const yearElement =
+        document.getElementById(
+          "evaluationYear"
+        );
+
+
+      if(
+        monthElement &&
+        yearElement
+      ){
+
+
+        if(
+          qrMonth &&
+          Number(qrMonth) >= 1 &&
+          Number(qrMonth) <= 12
+        ){
+
+          monthElement.value =
+            String(
+              Number(qrMonth)
+            );
+
+        }
+
+
+        if(
+          qrYear &&
+          /^\d{4}$/.test(
+            String(qrYear)
+          )
+        ){
+
+          const existingOption =
+            Array.from(
+              yearElement.options
+            )
+            .find(
+              option =>
+                option.value ===
+                String(qrYear)
+            );
+
+
+          if(
+            !existingOption
+          ){
+
+            const option =
+              document.createElement(
+                "option"
+              );
+
+
+            option.value =
+              String(qrYear);
+
+
+            option.textContent =
+              String(qrYear);
+
+
+            yearElement.appendChild(
+              option
+            );
+
+          }
+
+
+          yearElement.value =
+            String(qrYear);
+
+        }
+
+      }
+
+    }
+
+
+
+    /* =================================================
+       AUTHENTICATION
+       ================================================= */
+
+    requireAnyRole(
+
+      [
+        "SUPER ADMIN",
+        "ADMIN",
+        "NSA OFFICER"
+      ],
+
+      function(session){
+
+        console.log(
+          "[HOME] AUTH PASSED",
+          session
+        );
+
+
+        const page =
+          document.getElementById(
+            "officerHome"
+          );
+
+
+        if(!page){
+
+          notify(
+            "Officer portal could not initialize.",
+            "error"
+          );
+
+          return;
+
+        }
+
+
+        /*
+         * IMPORTANT:
+         * officer-page is a flex column.
+         * Keep it as flex after authentication.
+         */
+
+        page.style.display =
+          "flex";
+
+
+        showOfficerRole();
+
+      },
+
+
+      function(error){
+
+        console.error(
+          "[HOME] AUTH FAILED:",
+          error
+        );
+
+      }
+
+    );
+
+
+  }
+
+
+  catch(error){
+
+    console.error(
+      "[HOME] Initialization error:",
+      error
+    );
+
+
+    notify(
+      "Home page error: " +
+      error.message,
+      "error"
+    );
+
+  }
+
+}
+
+
+
+/* =====================================================
+   SHOW OFFICER ROLE
+   ===================================================== */
+
+function showOfficerRole(){
+
+
+  const element =
+    document.getElementById(
+      "loggedOfficer"
+    );
+
+
+  if(!element){
+
+    return;
+
+  }
+
+
+  const role =
+    getUserRole() ||
+    "Officer";
+
+
+  element.innerHTML =
+    "Logged in as: " +
+    role;
+
+}
+
+
+
+/* =====================================================
+   CONTINUE PORTAL
+   ===================================================== */
+
+function continuePortal(){
+
+
+  if(registrationBusy){
+
+    console.log(
+      "[PORTAL] Request already in progress."
+    );
+
+    return;
+
+  }
+
+
+
+  const nssElement =
+    document.getElementById(
+      "nss"
+    );
+
+
+  const serviceElement =
+    document.getElementById(
+      "service"
+    );
+
+
+  if(
+    !nssElement ||
+    !serviceElement
+  ){
+
+    notify(
+      "Portal form could not be loaded.",
+      "error"
+    );
+
+    return;
+
+  }
+
+
+
+  const nss =
+    nssElement
+      .value
+      .trim();
+
+
+  const service =
+    serviceElement
+      .value;
+
+
+
+  /* =================================================
+     VALIDATE NSS
+     ================================================= */
+
+  if(!nss){
+
+    notify(
+      "Enter NSS Number",
+      "error"
+    );
+
+    return;
+
+  }
+
+
+
+  /* =================================================
+     MONTHLY EVALUATION
+     SERVER-SIDE PRECHECK
+     ================================================= */
+
+  if(
+    service === "monthly"
+  ){
+
+    const monthElement =
+      document.getElementById(
+        "evaluationMonth"
+      );
+
+
+    const yearElement =
+      document.getElementById(
+        "evaluationYear"
+      );
+
+
+    if(
+      !monthElement ||
+      !yearElement
+    ){
+
+      notify(
+        "Monthly evaluation period fields could not be loaded.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    const month =
+      Number(
+        monthElement.value
+      );
+
+
+    const year =
+      Number(
+        yearElement.value
+      );
+
+
+    if(
+      !Number.isInteger(month) ||
+      month < 1 ||
+      month > 12
+    ){
+
+      notify(
+        "Please select a valid evaluation month.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    if(
+      !Number.isInteger(year) ||
+      year < 2000 ||
+      year > 2100
+    ){
+
+      notify(
+        "Please select a valid evaluation year.",
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    startEvaluationPrecheck({
+
+      nssNumber:nss,
+
+      type:"MONTHLY",
+
+      month:month,
+
+      year:year
+
+    });
+
+
+    return;
+
+  }
+
+
+
+  /* =================================================
+     ANNUAL EVALUATION
+     SERVER-SIDE PRECHECK
+     ================================================= */
+
+  if(
+    service === "annual"
+  ){
+
+    startEvaluationPrecheck({
+
+      nssNumber:nss,
+
+      type:"ANNUAL"
+
+    });
+
+
+    return;
+
+  }
+
+
+
+  /* =================================================
+     REGISTRATION
+     OTP ROUTE
+
+     THIS IS THE ONLY ROUTE THAT USES OTP
+     ================================================= */
+
+  registrationBusy =
+    true;
+
+
+  console.log(
+    "[REGISTRATION] Starting registration for:",
+    nss
+  );
+
+
+  showLoader();
+
+
+
+  google.script.run
+
+    .withFailureHandler(
+
+      function(error){
+
+        hideLoader();
+
+        registrationBusy =
+          false;
+
+
+        console.error(
+          "[REGISTRATION] Server error:",
+          error
+        );
+
+
+        notify(
+          "Registration error: " +
+          (
+            error &&
+            error.message
+            ?
+            error.message
+            :
+            "Unknown error"
+          ),
+          "error"
+        );
+
+      }
+
+    )
+
+
+    .withSuccessHandler(
+
+      function(res){
+
+        hideLoader();
+
+
+        console.log(
+          "[REGISTRATION] Portal response:",
+          res
+        );
+
+
+        if(
+          !res ||
+          res.status !== "SUCCESS"
+        ){
+
+          registrationBusy =
+            false;
+
+
+          notify(
+            res &&
+            res.message
+            ?
+            res.message
+            :
+            "Unable to start registration.",
+            "error"
+          );
+
+
+          return;
+
+        }
+
+
+
+        /* =============================================
+           SAVE REGISTRATION SESSION
+           ============================================= */
+
+        if(!res.token){
+
+          registrationBusy =
+            false;
+
+
+          notify(
+            "Registration session could not be created.",
+            "error"
+          );
+
+
+          return;
+
+        }
+
+
+        saveRegistrationSession(
+          res.token
+        );
+
+
+
+        /* =============================================
+           SEND OTP
+           ============================================= */
+
+        showLoader();
+
+
+        google.script.run
+
+          .withFailureHandler(
+
+            function(error){
+
+              hideLoader();
+
+              registrationBusy =
+                false;
+
+
+              console.error(
+                "[OTP] Send error:",
+                error
+              );
+
+
+              notify(
+                "Could not send OTP: " +
+                (
+                  error &&
+                  error.message
+                  ?
+                  error.message
+                  :
+                  "Unknown error"
+                ),
+                "error"
+              );
+
+            }
+
+          )
+
+
+          .withSuccessHandler(
+
+            function(otpRes){
+
+              hideLoader();
+
+
+              console.log(
+                "[OTP] Response:",
+                otpRes
+              );
+
+
+              if(
+                !otpRes ||
+                otpRes.status !== "SUCCESS"
+              ){
+
+                registrationBusy =
+                  false;
+
+
+                notify(
+                  otpRes &&
+                  otpRes.message
+                  ?
+                  otpRes.message
+                  :
+                  "Unable to send verification code.",
+                  "error"
+                );
+
+
+                return;
+
+              }
+
+
+              notify(
+                "Verification code sent successfully.",
+                "success"
+              );
+
+
+              registrationBusy =
+                false;
+
+
+              google.script.run
+
+                .withSuccessHandler(
+
+                  function(url){
+
+                    window.location.assign(
+
+                      url +
+                      "?page=otp&purpose=registration"
+
+                    );
+
+                  }
+
+                )
+
+                .getApplicationUrl();
+
+            }
+
+          )
+
+
+          .sendRegistrationOTP(
+            getRegistrationSession()
+          );
+
+      }
+
+    )
+
+
+    .openRegistrationPortal(
+      nss
+    );
+
+}
+
+
+
+/* =====================================================
+   WINDOW LOAD
+   ===================================================== */
+
+window.onload =
+  function(){
+
+    console.log(
+      "[HOME] Window loaded."
+    );
+
+
+    initializeMonthlyPeriodFields();
+
+
+    initializeOfficerHome();
+
+  };
+
+
+
+/* =====================================================
+   QR CAMERA MESSAGE
+   ===================================================== */
+
+window.addEventListener("message", function(event) {
+
+  /*
+   * Accept QR results only from the deployed camera origin AND the
+   * exact popup opened by this Home page. This prevents unrelated
+   * windows on the same origin from triggering portal navigation.
+   */
+  if (event.origin !== "https://nsawawm.github.io") return;
+  if (!qrWindow || event.source !== qrWindow) return;
+
+  const message = event.data;
+
+  if (!message || message.type !== "NSA_QR_SCAN") return;
+
+  const decodedText = String(
+    message.data || message.decodedText || ""
+  ).trim();
+
+  console.log("[QR RECEIVED FROM CAMERA]", decodedText);
+
+  if (!decodedText) {
+    notify("The QR scanner returned an empty result. Please scan the QR code again.", "error");
+    return;
+  }
+
+  /*
+   * Consume this scanner window once a result arrives. The camera
+   * closes itself after posting the message.
+   */
+  qrWindow = null;
+
+  if (typeof window.processQR !== "function") {
+    console.error("[HOME] processQR is unavailable. Check the qr-router.html include.");
+    notify("QR routing could not be loaded. Refresh the Home page and try again.", "error");
+    return;
+  }
+
+  try {
+    window.processQR(decodedText);
+  } catch (error) {
+    console.error("[HOME] QR processing failed:", error);
+    notify("The QR code was read, but the portal could not process it. Please try again.", "error");
+  }
+});
+
+
+
+/* =====================================================
+   EVALUATION ROUTING PRECHECK
+
+   Used by BOTH manual entry and QR routing.
+   ===================================================== */
+
+let evaluationBusy =
+  false;
+
+let pendingDuplicateEvaluation = null;
+
+function showDuplicateSubmissionModal(data, res) {
+
+  pendingDuplicateEvaluation = {
+    data: data,
+    response: res
+  };
+
+  const evaluation = res.evaluation || {};
+  const personnel = res.personnel || {};
+  const existing = res.existingSubmission || {};
+
+  const type = String(data.type || "").toUpperCase();
+
+  const period = evaluation.period ||
+    (type === "MONTHLY"
+      ? formatHomeMonth_(data.month) + " " + data.year
+      : personnel.serviceYear || "Service year");
+
+  const submittedDate =
+    existing.submittedDate ||
+    evaluation.submittedDate ||
+    "Not available";
+
+  const capturedBy =
+    existing.capturedBy ||
+    evaluation.capturedBy ||
+    "Not available";
+
+  document.getElementById("duplicateMessage").textContent =
+    "An existing " + type.toLowerCase() +
+    " evaluation was found for this personnel member.";
+
+  document.getElementById("duplicateDetails").textContent =
+    "Personnel: " + (personnel.name || "Not available") +
+    "\nNSS Number: " + (personnel.nss || data.nssNumber) +
+    "\nEvaluation period: " + period +
+    "\nSubmitted date: " + submittedDate +
+    "\nCaptured by: " + capturedBy;
+
+  document.getElementById("duplicateModal").style.display = "flex";
+}
+
+function formatHomeMonth_(month) {
+
+  const months = [
+    "January", "February", "March", "April",
+    "May", "June", "July", "August",
+    "September", "October", "November", "December"
+  ];
+
+  return months[Number(month) - 1] || "Unknown month";
+}
+
+function closeDuplicateSubmissionModal() {
+
+  document.getElementById("duplicateModal").style.display = "none";
+}
+
+function returnHomeFromDuplicate() {
+
+  closeDuplicateSubmissionModal();
+
+  pendingDuplicateEvaluation = null;
+
+  notify(
+    "No changes were made. The existing submission remains unchanged.",
+    "success"
+  );
+
+  const nssInput = document.getElementById("nss");
+
+  if (nssInput) {
+    nssInput.focus();
+  }
+}
+
+function updateDuplicateSubmission() {
+
+  if (!pendingDuplicateEvaluation) {
+    notify("The evaluation request has expired. Please try again.", "error");
+    return;
+  }
+
+  const data = pendingDuplicateEvaluation.data;
+
+  const type = String(data.type || "").toUpperCase();
+
+  const page = type === "MONTHLY"
+    ? "monthly-evaluation"
+    : "annual-evaluation";
+
+  const params = {
+    nssNumber: data.nssNumber,
+    type: type.toLowerCase(),
+    identifier: data.identifier || "",
+    updateExisting: "1"
+  };
+
+  if (type === "MONTHLY") {
+    params.month = Number(data.month);
+    params.year = Number(data.year);
+  }
+
+  closeDuplicateSubmissionModal();
+
+  pendingDuplicateEvaluation = null;
+
+  openPage(page, params);
+}
+
+function startEvaluationPrecheck(data) {
+
+  if (evaluationBusy) {
+    return;
+  }
+
+  evaluationBusy = true;
+
+  showLoader();
+
+  google.script.run
+
+    .withFailureHandler(function(error) {
+
+      hideLoader();
+
+      evaluationBusy = false;
+
+      notify(
+        error && error.message
+          ? error.message
+          : "Unable to validate the evaluation request.",
+        "error"
+      );
+
+    })
+
+    .withSuccessHandler(function(res) {
+
+      hideLoader();
+
+      evaluationBusy = false;
+
+      if (!res || res.status !== "SUCCESS") {
+
+        notify(
+          res && res.message
+            ? res.message
+            : "Evaluation validation failed.",
+          "error"
+        );
+
+        return;
+      }
+
+      /*
+       * IMPORTANT:
+       * Handle duplicates before checking canOpenEvaluation.
+       */
+      if (res.alreadySubmitted) {
+
+        showDuplicateSubmissionModal(data, res);
+
+        return;
+      }
+
+      if (!res.canOpenEvaluation) {
+
+        notify(
+          res.evaluation && res.evaluation.message
+            ? res.evaluation.message
+            : res.message || "This evaluation cannot continue.",
+          "error"
+        );
+
+        return;
+      }
+
+      const type = String(data.type).toUpperCase();
+
+      const page = type === "MONTHLY"
+        ? "monthly-evaluation"
+        : "annual-evaluation";
+
+      const params = {
+        nssNumber: data.nssNumber,
+        type: type.toLowerCase(),
+        identifier: data.identifier || ""
+      };
+
+      if (type === "MONTHLY") {
+        params.month = Number(data.month);
+        params.year = Number(data.year);
+      }
+
+      openPage(page, params);
+
+    })
+
+    .getEvaluationPrecheck({
+
+      nssNumber: data.nssNumber,
+
+      type: String(data.type).toUpperCase(),
+
+      month: data.month || "",
+
+      year: data.year || "",
+
+      sessionToken: getUserSession(),
+
+      updateExisting: false
+
+    });
+}
+
+
+</script>
+</body>
+</html>

@@ -1977,7 +1977,7 @@ function initAdminShell() {
   const title = document.querySelector(".page-heading .title"); if (title) document.title = title.textContent.trim() + " | NSA WAWM";
   google.script.run.withFailureHandler(function(e) { console.warn("Branding settings unavailable", e); }).withSuccessHandler(function(data) {
     if (!data) return;
-    document.querySelectorAll("[data-brand-logo]").forEach(function(img) { if (data.logoUrl) img.src = data.logoUrl; });
+    document.querySelectorAll("[data-brand-logo]").forEach(function(img) { if (data.logoUrl) img.src = './assets/my_logo.png'; });
     ["appSystemName", "footerSystemName"].forEach(function(id) { const el = document.getElementById(id); if (el && data.systemName) el.textContent = data.systemName; });
     ["appInstitution", "footerInstitution"].forEach(function(id) { const el = document.getElementById(id); if (el && data.institution) el.textContent = data.institution; });
   }).getBrandingSettings(getUserSession());
@@ -1996,7 +1996,7 @@ function serverCallFailed(error) { adminError(error); }
 <body>
 <div class="admin-layout">
 <aside class="sidebar" id="adminSidebar" aria-label="Administration navigation">
-  <div class="sidebar-brand"><img data-brand-logo src="https://lh3.googleusercontent.com/d/10gIO9KpoqufMr8xWVh6ZfOBgDRU-KUN3" alt="NSA WAWM logo"><div><h3>NSA WAWM</h3><small>Administration Portal</small></div></div>
+  <div class="sidebar-brand"><img data-brand-logo src="./assets/my_logo.png" alt="NSA WAWM logo"><div><h3>NSA WAWM</h3><small>Administration Portal</small></div></div>
   <nav class="sidebar-menu">
     <div class="nav-section">Workspace</div>
     <button type="button" data-page="admin" data-roles="ADMIN,SUPER ADMIN"><span class="nav-icon">⌂</span>Dashboard</button>
@@ -2042,7 +2042,7 @@ function navigateAdmin(page, params) { hideLoader(); openPage(page, params || {}
 </section>
 <section class="card"><div class="section-heading"><div><h2>Quick actions</h2><p>Common administration tasks</p></div></div><div class="toolbar"><button type="button" onclick="navigateAdmin('personnel-management')">View personnel</button><button type="button" class="secondary" onclick="navigateAdmin('master-import')">Import posting file</button><button type="button" class="secondary" onclick="navigateAdmin('batch-form')">Create batch</button><button type="button" class="secondary" onclick="navigateAdmin('reports')">Generate report</button></div></section>
 
-<footer class="admin-footer"><div class="admin-footer-inner"><div class="admin-footer-brand"><img data-brand-logo src="https://lh3.googleusercontent.com/d/10gIO9KpoqufMr8xWVh6ZfOBgDRU-KUN3" alt="NSA WAWM logo"><div><strong id="footerSystemName">NSA Personnel Management System</strong><div id="footerInstitution">Wassa Amenfi West Municipal Secretariat</div></div></div><div>Secure personnel administration · © <span id="footerYear">2026</span> NSA WAWM</div></div></footer>
+<footer class="admin-footer"><div class="admin-footer-inner"><div class="admin-footer-brand"><img data-brand-logo src="./assets/my_logo.png" alt="NSA WAWM logo"><div><strong id="footerSystemName">NSA Personnel Management System</strong><div id="footerInstitution">Wassa Amenfi West Municipal Secretariat</div></div></div><div>Secure personnel administration · © <span id="footerYear">2026</span> NSA WAWM</div></div></footer>
 </main>
 </div>
 <script>

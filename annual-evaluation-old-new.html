@@ -1,0 +1,469 @@
+<!doctype html>
+<html lang="en">
+<head>
+<script src="./assets/config.js"></script>
+<script src="./assets/apps-script-bridge.js"></script>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#006b3f">
+  <meta name="description" content="NSA WAWM annual evaluation submission">
+  <title>Annual Evaluation | NSA WAWM</title>
+  <link rel="icon" href="./assets/my_logo.png" type="image/png">
+  <style>
+    :root {
+      --green:#006b3f; --deep-green:#005632; --bright-green:#22c96b; --gold:#ffdc00;
+      --paper:#f5faf7; --ink:#143f30; --muted:#60736b; --line:#d9e9e1;
+      --red:#9a2424; --amber:#8a5100;
+    }
+    *{box-sizing:border-box}
+    html{min-height:100%}
+    body{
+      margin:0;min-height:100vh;min-height:100svh;display:flex;flex-direction:column;
+      padding:0 24px;overflow-x:hidden;color:var(--ink);
+      font-family:Inter,Roboto,"Segoe UI",Arial,sans-serif;
+      background:linear-gradient(135deg,transparent 0 48%,rgba(34,201,107,.95) 48% 68%,transparent 68%),
+        linear-gradient(135deg,#005a37 0%,#006c43 54%,#005632 100%);background-attachment:fixed
+    }
+    button,input{font:inherit}button{cursor:pointer}
+    button:focus-visible,input:focus-visible{outline:3px solid rgba(255,220,0,.85);outline-offset:3px}
+    .portal{width:min(1120px,100%);margin:22px auto 0;overflow:hidden;border-radius:16px;background:var(--deep-green);box-shadow:0 18px 46px rgba(0,35,20,.18);flex:0 0 auto}
+    .portal-header{position:relative;display:flex;align-items:center;gap:18px;min-height:132px;padding:25px 28px;color:#fff;background:radial-gradient(circle at 0% 0%,rgba(255,255,255,.09) 0 18%,transparent 18.2%),linear-gradient(115deg,#25c96c,#20c665 75%,#28c96b);isolation:isolate}
+    .portal-header:after{content:"";position:absolute;z-index:-1;width:260px;height:260px;right:-170px;bottom:-210px;border:1px solid rgba(255,255,255,.16);border-radius:50%;box-shadow:0 0 0 28px rgba(255,255,255,.035),0 0 0 56px rgba(255,255,255,.025)}
+    .brand-logo{display:grid;place-items:center;width:74px;height:74px;flex:0 0 74px;overflow:hidden;border-radius:4px;background:#fff;box-shadow:0 5px 14px rgba(0,45,25,.1)}
+    .brand-logo img{display:block;width:100%;height:100%;padding:5px;object-fit:contain}
+    .brand-copy{min-width:0}.brand-kicker{margin:0 0 5px;font-size:10px;line-height:1.3;font-weight:850;letter-spacing:1.55px;text-transform:uppercase}
+    .brand-title{margin:0;color:#fff;font-size:clamp(24px,3vw,32px);line-height:1.12;font-weight:850;letter-spacing:-.6px}
+    .brand-subtitle{margin:7px 0 0;color:rgba(255,255,255,.96);font-size:12px;line-height:1.45}
+    .header-actions{margin-left:auto;align-self:flex-start}
+    .header-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:37px;padding:0 15px;border:1px solid rgba(255,255,255,.7);border-radius:999px;background:rgba(0,94,53,.08);color:#fff;font-size:10px;font-weight:850;letter-spacing:.55px;text-transform:uppercase;white-space:nowrap}
+    .header-button:hover{background:rgba(0,74,43,.18)}
+    .content-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+    .summary-panel{min-width:0;padding:34px 36px;background:var(--paper)}
+    .submission-panel{min-width:0;display:flex;flex-direction:column;justify-content:center;padding:36px 54px;color:#fff;background:var(--green)}
+    .section-kicker{margin:0 0 10px;font-size:10px;line-height:1.2;font-weight:900;letter-spacing:1.65px;text-transform:uppercase}
+    .summary-panel .section-kicker{color:var(--green)}.submission-panel .section-kicker{color:rgba(255,255,255,.82)}
+    .section-title{margin:0;font-size:clamp(23px,2.2vw,29px);line-height:1.17;letter-spacing:-.55px;font-weight:850}
+    .summary-panel .section-title{color:var(--ink)}.submission-panel .section-title{color:#fff}
+    .section-description{margin:11px 0 22px;color:var(--muted);font-size:12px;line-height:1.65}
+    .submission-panel .section-description{color:rgba(255,255,255,.92)}
+    .info-card{padding:18px;margin-top:14px;border:1px solid var(--line);border-radius:15px;background:#fff;box-shadow:0 8px 22px rgba(0,63,38,.035)}
+    .card-heading{display:flex;align-items:center;gap:9px;margin:0 0 14px;color:#163e30;font-size:14px;font-weight:850}
+    .card-heading-icon{display:grid;place-items:center;width:29px;height:29px;flex:0 0 29px;border-radius:50%;background:#e1f6eb;color:var(--green);font-size:15px}
+     .card-heading-icon-svg{width:17px;height:17px;display:block;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+     .action-icon-svg{width:16px;height:16px;display:block;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+     .button-icon-svg{width:14px;height:14px;display:block;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+    .detail-list{display:grid;gap:10px;margin:0}
+    .detail-row{display:grid;grid-template-columns:minmax(95px,.8fr) minmax(0,1.2fr);gap:12px;padding-bottom:9px;border-bottom:1px solid #edf3ef;font-size:12px;line-height:1.45}
+    .detail-row:last-child{padding-bottom:0;border-bottom:0}.detail-row dt{color:var(--muted)}
+    .detail-row dd{margin:0;color:var(--ink);font-weight:750;overflow-wrap:anywhere;text-align:right}
+    .period-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .period-item{padding:12px;border-radius:10px;background:#f0f8f3}
+    .period-label{display:block;margin-bottom:5px;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.8px;font-weight:800}
+    .period-value{color:var(--ink);font-size:17px;font-weight:900}
+    .status-box{padding:12px 13px;border-radius:10px;background:#e7f8ee;color:#145b36;font-size:12px;line-height:1.55;font-weight:700;overflow-wrap:anywhere}
+    .status-box.ok{background:#e7f8ee;color:#145b36}.status-box.late{background:#fff4dc;color:var(--amber)}
+    .status-box.bad,.status-box.error{background:#fff0f0;color:var(--red)}.status-box.pending{background:#edf2f7;color:#425466}
+    .status-box p{margin:6px 0 0;font-weight:500}
+    .capture-card{padding:17px;margin:0 0 12px;border:1px solid rgba(255,255,255,.28);border-radius:15px;background:rgba(0,60,35,.18)}
+    .capture-heading{margin:0 0 8px;color:#fff;font-size:15px;font-weight:850}
+    .capture-description{margin:0 0 14px;color:rgba(255,255,255,.82);font-size:11px;line-height:1.6}
+    .field-label{display:block;margin:0 0 7px;color:rgba(255,255,255,.94);font-size:11px;font-weight:800}
+    .capture-input{display:block;width:100%;height:47px;padding:0 15px;border:1px solid rgba(255,255,255,.92);border-radius:11px;outline:none;background:#f8fbf9;color:#183d2f;font-size:15px;font-weight:800;letter-spacing:2px;text-transform:uppercase}
+    .capture-input::placeholder{color:#7a8982;opacity:1;font-size:12px;font-weight:500;letter-spacing:.3px}
+    .capture-input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(255,220,0,.14)}
+    .capture-actions{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:9px;margin-top:10px}
+    .scan-button,.submit-button,.home-button,.modal-button{min-height:45px;border:0;border-radius:999px;font-size:10px;font-weight:900;letter-spacing:.45px;text-transform:uppercase}
+    .scan-button{display:flex;align-items:center;justify-content:center;gap:7px;border:1px solid rgba(255,255,255,.68);background:transparent;color:#fff}
+    .scan-button:hover{background:rgba(255,255,255,.08)}
+    .submit-button{width:100%;display:flex;align-items:center;justify-content:center;gap:11px;padding:11px 15px;background:var(--gold);color:#073e2b;box-shadow:0 4px 0 rgba(0,44,25,.12);transition:transform .15s ease,background .15s ease}
+    .submit-button:hover:not(:disabled){background:#ffe633;transform:translateY(-1px)}
+    .submit-button:disabled{cursor:not-allowed;opacity:.55;transform:none}
+    .home-button{width:100%;margin-top:10px;border:1px solid rgba(255,255,255,.7);background:transparent;color:#fff}
+    .home-button:hover{background:rgba(255,255,255,.08)}
+    .helper-text{margin:12px 0 0;color:rgba(255,255,255,.78);font-size:10px;line-height:1.6}
+    .message{display:none;margin:12px 0 0;padding:10px 12px;border-radius:9px;font-size:12px;line-height:1.5;overflow-wrap:anywhere}
+    .message.visible{display:block}.message.error{background:#fff0f0;color:var(--red)}.message.success{background:#e7f8ee;color:#145b36}.message.info{background:#edf2f7;color:#425466}
+    .portal-footer{width:min(1120px,100%);margin:auto auto 0;padding:14px 0 12px;border-top:1px solid rgba(255,255,255,.58);color:rgba(255,255,255,.92);font-size:10px;line-height:1.5}
+    .footer-row{display:flex;align-items:center;justify-content:space-between;gap:16px}.footer-row+.footer-row{margin-top:3px}.footer-right{text-align:right}
+    .modal-backdrop{position:fixed;inset:0;z-index:1000;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(0,24,14,.7)}
+    .modal-backdrop.open{display:flex}.modal{width:min(470px,100%);padding:24px;border-radius:16px;background:#fff;color:var(--ink);box-shadow:0 24px 70px rgba(0,0,0,.28)}
+    .modal h2{margin:0 0 10px;font-size:21px}.modal p{color:#53675e;font-size:13px;line-height:1.6}
+    .modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px}
+    .modal-button.approve{background:var(--green);color:#fff}.modal-button.reject{background:#e7ece9;color:#243d31}
+    [hidden]{display:none!important}
+    @media(max-width:720px){
+      body{padding:0 8px}.portal{margin:8px auto 0;border-radius:13px}
+      .portal-header{min-height:88px;gap:9px;padding:13px 11px;align-items:flex-start}
+      .brand-logo{width:43px;height:43px;flex-basis:43px;margin-top:2px}.brand-logo img{padding:3px}
+      .brand-kicker{margin-bottom:4px;font-size:6.5px;letter-spacing:.7px}.brand-title{font-size:16px;line-height:1.15;letter-spacing:-.25px}
+      .brand-subtitle{max-width:230px;margin-top:4px;font-size:8.5px;line-height:1.35}
+      .header-actions{padding-top:16px}.header-button{min-height:28px;padding:0 9px;gap:5px;font-size:7px;letter-spacing:.3px}
+      .content-grid{grid-template-columns:minmax(0,1fr)}.summary-panel{padding:20px 13px 18px}
+      .submission-panel{display:block;padding:20px 13px 25px}.section-kicker{margin-bottom:9px;font-size:9px;letter-spacing:1.4px}
+      .section-title{font-size:20px;line-height:1.2}.section-description{margin:9px 0 16px;font-size:12px;line-height:1.6}
+      .info-card{padding:13px;margin-top:11px;border-radius:13px}.card-heading{margin-bottom:11px;font-size:13px}
+      .detail-row{grid-template-columns:minmax(86px,.8fr) minmax(0,1.2fr);gap:8px;font-size:11px}
+      .period-item{padding:10px}.period-value{font-size:16px}.capture-card{padding:13px;margin-bottom:11px}
+      .capture-heading{font-size:14px}.capture-description{font-size:11px}.capture-input{height:45px}
+      .capture-actions{grid-template-columns:1fr}.scan-button{min-height:42px}.submit-button,.home-button{min-height:45px}
+      .portal-footer{margin:auto 0 0;padding:11px 0 10px;font-size:9px}.footer-row{display:block}
+      .footer-right{margin-top:4px;text-align:left}.modal{padding:20px}.modal-actions{grid-template-columns:1fr}
+    }
+    @media(max-width:360px){
+      body{padding:0 6px}.brand-title{font-size:14px}.brand-subtitle{font-size:8px}
+      .header-actions{padding-top:18px}.header-button{padding:0 7px;font-size:6.5px}
+      .summary-panel,.submission-panel{padding-right:11px;padding-left:11px}
+    }
+    @media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important}}
+  </style>
+</head>
+<body>
+  <main class="portal" aria-label="NSA WAWM annual evaluation">
+    <header class="portal-header">
+      <a class="brand-logo" href="./index.html" aria-label="NSA WAWM home">
+        <img src="./assets/my_logo.png" alt="National Service Authority logo" width="74" height="74">
+      </a>
+      <div class="brand-copy">
+        <p class="brand-kicker">National Service Authority</p>
+        <h1 class="brand-title">Annual Evaluation</h1>
+        <p class="brand-subtitle">Wassa Amenfi West Municipal Secretariat · Officer Portal</p>
+      </div>
+      <div class="header-actions">
+        <button class="header-button" id="homeHeaderButton" type="button"><span aria-hidden="true">&#8592;</span> Home</button>
+      </div>
+    </header>
+
+    <div class="content-grid">
+      <section class="summary-panel" aria-labelledby="summaryTitle">
+        <p class="section-kicker">Evaluation Overview</p>
+        <h2 class="section-title" id="summaryTitle">Review your annual evaluation</h2>
+        <p class="section-description">Confirm the personnel details and annual evaluation status before submitting the official office capture code.</p>
+
+        <section class="info-card" aria-labelledby="personnelHeading">
+          <h3 class="card-heading" id="personnelHeading"><span class="card-heading-icon" aria-hidden="true"><svg class="card-heading-icon-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.2"/><path d="M5.5 20c.7-4 2.9-6 6.5-6s5.8 2 6.5 6"/></svg></span>Personnel Details</h3>
+          <dl class="detail-list">
+            <div class="detail-row"><dt>Full name</dt><dd id="personName">Loading&#8230;</dd></div>
+            <div class="detail-row"><dt>NSS number</dt><dd id="personNss">—</dd></div>
+            <div class="detail-row"><dt>Batch</dt><dd id="personBatch">—</dd></div>
+            <div class="detail-row"><dt>Posted to</dt><dd id="personCompany">—</dd></div>
+          </dl>
+        </section>
+
+        <section class="info-card" aria-labelledby="periodHeading">
+          <h3 class="card-heading" id="periodHeading"><span class="card-heading-icon" aria-hidden="true"><svg class="card-heading-icon-svg" viewBox="0 0 24 24" aria-hidden="true"><rect x="4.5" y="5" width="15" height="15" rx="2"/><path d="M8 3.5v3M16 3.5v3M4.5 9h15M8 12.5h3M13 12.5h3M8 16h3"/></svg></span>Evaluation Cycle</h3>
+          <div class="period-grid">
+            <div class="period-item"><span class="period-label">Evaluation type</span><strong class="period-value">Annual</strong></div>
+            <div class="period-item"><span class="period-label">Cycle</span><strong class="period-value" id="periodYear">Current cycle</strong></div>
+          </div>
+        </section>
+
+        <section class="info-card" aria-labelledby="statusHeading">
+          <h3 class="card-heading" id="statusHeading"><span class="card-heading-icon" aria-hidden="true"><svg class="card-heading-icon-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.2 4.2L19 7"/></svg></span>Submission Status</h3>
+          <div class="status-box pending" id="submissionStatus" role="status" aria-live="polite">Checking eligibility&#8230;</div>
+        </section>
+      </section>
+
+      <section class="submission-panel" aria-labelledby="submitTitle">
+        <p class="section-kicker">Secure Submission</p>
+        <h2 class="section-title" id="submitTitle">Confirm annual evaluation</h2>
+        <p class="section-description">Scan the six-character code shown on the Secretariat device, or enter it manually.</p>
+
+        <section class="capture-card" id="captureCodeCard" aria-labelledby="captureHeading">
+          <h3 class="capture-heading" id="captureHeading">Office Capture Code</h3>
+          <p class="capture-description">The code must contain exactly six letters or numbers. Check it before confirming submission.</p>
+          <label class="field-label" for="captureCode">Six-character code</label>
+          <input class="capture-input" id="captureCode" type="text" maxlength="6" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ABC123" aria-describedby="captureHelp">
+          <div class="capture-actions">
+            <button class="scan-button" id="scanCodeButton" type="button"><span aria-hidden="true"><svg class="action-icon-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V5h4M15 5h4v4M20 15v4h-4M9 19H5v-4"/><rect x="8" y="8" width="8" height="8" rx="1.5"/></svg></span> Scan Code</button>
+            <button class="scan-button" id="clearCodeButton" type="button">Clear Code</button>
+          </div>
+          <p class="helper-text" id="captureHelp">Use the scan button to open the secure camera page. Camera access requires HTTPS and browser permission.</p>
+        </section>
+
+        <button class="submit-button" id="submitButton" type="button" disabled><span id="submitButtonLabel">Confirm Annual Submission</span><span aria-hidden="true">&#8594;</span></button>
+        <button class="home-button" id="returnHomeButton" type="button" hidden>Return Home Now</button>
+        <p class="message" id="pageMessage" role="status" aria-live="polite"></p>
+      </section>
+    </div>
+  </main>
+
+  <footer class="portal-footer">
+    <div class="footer-row">
+      <div>NSA Personnel Management System · Wassa Amenfi West Municipal Secretariat</div>
+      <div class="footer-right">Secure personnel administration · © <span id="footerYear"></span> NSA WAWM</div>
+    </div>
+  </footer>
+
+  <div class="modal-backdrop" id="lateModal" role="dialog" aria-modal="true" aria-labelledby="lateModalTitle" aria-describedby="lateMessage">
+    <div class="modal">
+      <h2 id="lateModalTitle">Late Submission Detected</h2>
+      <p id="lateMessage">This annual evaluation is outside the normal submission conditions. Officer approval is required before submission can continue.</p>
+      <div class="modal-actions">
+        <button class="modal-button approve" id="approveLateButton" type="button">Approve &amp; Continue</button>
+        <button class="modal-button reject" id="rejectLateButton" type="button">Reject</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /*
+     * GitHub Pages cannot call google.script.run directly. Configure an HTTPS
+     * API gateway that invokes the existing Apps Script backend functions.
+     * Do not store private keys or secrets in this public frontend.
+     */
+    const NSA_ANNUAL_CONFIG = {
+      apiUrl: (window.NSA_CONFIG && window.NSA_CONFIG.apiUrl) || "", // Set to your deployed HTTPS API gateway endpoint.
+      cameraUrl: "https://nsawawm.github.io/camera-test/?mode=capture-code",
+      homeUrl: "./index.html",
+      sessionStorageKey: "NSA_USER_SESSION"
+    };
+
+    const state = {
+      nss: "",
+      identifier: "",
+      updateExisting: false,
+      captureCode: "",
+      captureCodeSource: "",
+      precheck: null,
+      locked: false,
+      redirectTimer: null
+    };
+    const $ = id => document.getElementById(id);
+    const cycleParam = new URLSearchParams(window.location.search).get("year");
+    $("footerYear").textContent = String(new Date().getFullYear());
+    $("periodYear").textContent = /^\d{4}$/.test(String(cycleParam || "")) ? cycleParam : "Current cycle";
+
+    function getSessionToken() {
+      return sessionStorage.getItem(NSA_ANNUAL_CONFIG.sessionStorageKey) || "";
+    }
+    function setMessage(text, kind = "info") {
+      const el = $("pageMessage");
+      el.textContent = text;
+      el.className = "message visible " + kind;
+    }
+    function clearMessage() {
+      $("pageMessage").textContent = "";
+      $("pageMessage").className = "message";
+    }
+    function setStatus(text, kind = "pending", detail = "") {
+      const el = $("submissionStatus");
+      el.className = "status-box " + kind;
+      el.replaceChildren(document.createTextNode(text));
+      if (detail) {
+        const p = document.createElement("p");
+        p.textContent = detail;
+        el.appendChild(p);
+      }
+    }
+    function readParams() {
+      const params = new URLSearchParams(window.location.search);
+      state.nss = String(params.get("nssNumber") || params.get("nss") || "").trim();
+      state.identifier = String(params.get("identifier") || "").trim();
+      state.updateExisting = ["1", "true"].includes(String(params.get("updateExisting") || "").toLowerCase());
+      state.captureCode = String(params.get("captureCode") || "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+      state.captureCodeSource = String(params.get("captureCodeSource") || "").trim().toLowerCase();
+      $("personNss").textContent = state.nss || "—";
+      $("captureCode").value = /^[A-Z0-9]{6}$/.test(state.captureCode) ? state.captureCode : "";
+      validateCaptureCode();
+    }
+    async function apiRequest(action, payload) {
+      if (!NSA_ANNUAL_CONFIG.apiUrl) {
+        throw new Error("The annual evaluation design is ready, but its Apps Script API gateway has not been configured.");
+      }
+      const response = await fetch(NSA_ANNUAL_CONFIG.apiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action, payload })
+      });
+      let result;
+      try { result = await response.json(); }
+      catch (_) { throw new Error("The server returned an unreadable response."); }
+      if (!response.ok) throw new Error(result && result.message ? result.message : "The server request failed.");
+      return result;
+    }
+    async function loadEvaluationState() {
+      clearMessage();
+      setStatus("Checking annual evaluation eligibility…", "pending");
+      $("submitButton").disabled = true;
+      $("captureCodeCard").hidden = false;
+      try {
+        if (!state.nss) throw new Error("NSS Number is missing from the annual evaluation request.");
+        if (!getSessionToken()) throw new Error("Your officer session is missing or has expired. Please sign in again.");
+
+        const result = await apiRequest("getEvaluationPrecheck", {
+          nssNumber: state.nss,
+          type: "ANNUAL",
+          identifier: state.identifier,
+          sessionToken: getSessionToken(),
+          updateExisting: state.updateExisting
+        });
+        state.precheck = result;
+        if (!result || result.status !== "SUCCESS") {
+          throw new Error(result && result.message ? result.message : "Annual evaluation validation failed.");
+        }
+
+        const p = result.personnel || {};
+        $("personName").textContent = p.name || "Not available";
+        $("personNss").textContent = p.nss || state.nss;
+        $("personBatch").textContent = p.batch || "Not available";
+        $("personCompany").textContent = p.companyPostedTo || "Not available";
+
+        if (result.alreadySubmitted && !state.updateExisting) {
+          renderRejected("This annual evaluation has already been submitted.");
+          return;
+        }
+        if (!result.canOpenEvaluation) {
+          renderRejected(result.message || (result.evaluation && result.evaluation.message) || "This annual evaluation cannot be opened.");
+          return;
+        }
+        if (result.requiresLateApproval) {
+          setStatus("Late annual submission requires officer approval.", "late", (result.evaluation && result.evaluation.lateReason) || "The normal submission deadline has passed.");
+          $("submitButton").disabled = true;
+          $("captureCodeCard").hidden = true;
+          $("lateMessage").textContent = (result.evaluation && result.evaluation.lateReason) || "The normal submission deadline has passed.";
+          $("lateModal").classList.add("open");
+          return;
+        }
+        if (result.approvalDecision === "REJECTED") {
+          renderRejected((result.evaluation && result.evaluation.message) || "Late annual submission was rejected.");
+          return;
+        }
+
+        if (state.updateExisting && result.alreadySubmitted) {
+          setStatus("Update mode: the existing annual evaluation will be replaced.", "ok");
+        } else if (result.late) {
+          setStatus(result.approvalDecision === "APPROVED" ? "Late annual submission approved." : "Late annual submission requires officer approval.", "late");
+        } else {
+          setStatus("Eligible for annual evaluation submission.", "ok");
+        }
+
+        $("submitButtonLabel").textContent = state.updateExisting ? "Update Annual Evaluation" : "Confirm Annual Submission";
+        validateCaptureCode();
+        if (state.captureCodeSource === "ocr" && /^[A-Z0-9]{6}$/.test(state.captureCode)) {
+          setMessage("Office capture code detected. Review the code, then confirm submission.", "success");
+        }
+      } catch (error) {
+        setStatus("Unable to continue.", "error", error && error.message ? error.message : "Annual evaluation validation failed.");
+        setMessage(error && error.message ? error.message : "Unable to load annual evaluation.", "error");
+      }
+    }
+    function renderRejected(message) {
+      setStatus(message, "bad");
+      $("captureCodeCard").hidden = true;
+      $("submitButton").disabled = true;
+    }
+    function validateCaptureCode() {
+      const input = $("captureCode");
+      input.value = input.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6);
+      const valid = /^[A-Z0-9]{6}$/.test(input.value);
+      $("submitButton").disabled = !valid || !state.precheck || !state.precheck.canSubmit || state.locked;
+      return valid;
+    }
+    $("captureCode").addEventListener("input", () => { clearMessage(); validateCaptureCode(); });
+    $("clearCodeButton").addEventListener("click", () => {
+      $("captureCode").value = "";
+      clearMessage();
+      validateCaptureCode();
+      $("captureCode").focus();
+    });
+    function buildReturnUrl() {
+      const url = new URL(window.location.href);
+      ["captureCode", "captureCodeSource"].forEach(k => url.searchParams.delete(k));
+      url.searchParams.set("page", "annual-evaluation");
+      url.searchParams.set("nssNumber", state.nss);
+      if (state.identifier) url.searchParams.set("identifier", state.identifier);
+      if (state.updateExisting) url.searchParams.set("updateExisting", "1");
+      else url.searchParams.delete("updateExisting");
+      return url.toString();
+    }
+    $("scanCodeButton").addEventListener("click", () => {
+      try {
+        if (!state.nss) throw new Error("NSS Number is missing from the annual evaluation request.");
+        const camera = new URL(NSA_ANNUAL_CONFIG.cameraUrl);
+        camera.searchParams.set("returnUrl", buildReturnUrl());
+        window.location.assign(camera.toString());
+      } catch (error) {
+        setMessage(error && error.message ? error.message : "Unable to open the camera.", "error");
+      }
+    });
+    async function submitEvaluation() {
+      if (state.locked) return;
+      if (!validateCaptureCode()) {
+        setMessage("Enter or scan the six-character office capture code.", "error");
+        return;
+      }
+      if (!state.precheck || !state.precheck.canSubmit) {
+        setMessage("The annual evaluation has not been confirmed as eligible for submission.", "error");
+        return;
+      }
+      state.locked = true;
+      $("submitButton").disabled = true;
+      $("submitButtonLabel").textContent = "Submitting…";
+      clearMessage();
+      try {
+        const result = await apiRequest("captureEvaluationSubmission", {
+          nssNumber: state.nss,
+          type: "ANNUAL",
+          captureCode: $("captureCode").value,
+          source: "PORTAL",
+          identifier: state.identifier,
+          updateExisting: state.updateExisting,
+          sessionToken: getSessionToken()
+        });
+        if (!result || result.status !== "SUCCESS") {
+          throw new Error(result && result.message ? result.message : "Annual evaluation could not be recorded.");
+        }
+        setStatus(state.updateExisting ? "Annual evaluation updated successfully." : "Annual evaluation submitted successfully.", "ok", "You will return to Home automatically in 10 seconds.");
+        $("captureCodeCard").hidden = true;
+        $("submitButtonLabel").textContent = state.updateExisting ? "Update Recorded" : "Submission Recorded";
+        $("returnHomeButton").hidden = false;
+        setMessage(state.updateExisting ? "Annual evaluation updated successfully." : "Annual evaluation submission recorded.", "success");
+        state.redirectTimer = window.setTimeout(goHome, 10000);
+      } catch (error) {
+        state.locked = false;
+        $("submitButtonLabel").textContent = state.updateExisting ? "Update Annual Evaluation" : "Confirm Annual Submission";
+        validateCaptureCode();
+        setMessage(error && error.message ? error.message : "Annual evaluation submission failed.", "error");
+      }
+    }
+    $("submitButton").addEventListener("click", submitEvaluation);
+    async function decideLate(decision) {
+      $("approveLateButton").disabled = true;
+      $("rejectLateButton").disabled = true;
+      try {
+        const result = await apiRequest("recordEvaluationLateDecision", {
+          nssNumber: state.nss,
+          type: "ANNUAL",
+          period: $("periodYear").textContent === "Current cycle" ? "ANNUAL" : $("periodYear").textContent,
+          decision,
+          sessionToken: getSessionToken()
+        });
+        if (!result || result.status !== "SUCCESS") {
+          throw new Error(result && result.message ? result.message : "Late-submission decision failed.");
+        }
+        $("lateModal").classList.remove("open");
+        setMessage(decision === "APPROVED" ? "Late annual submission approved. Rechecking eligibility…" : "Late annual submission rejected.", decision === "APPROVED" ? "success" : "error");
+        await loadEvaluationState();
+      } catch (error) {
+        setMessage(error && error.message ? error.message : "Unable to record the officer decision.", "error");
+      } finally {
+        $("approveLateButton").disabled = false;
+        $("rejectLateButton").disabled = false;
+      }
+    }
+    $("approveLateButton").addEventListener("click", () => decideLate("APPROVED"));
+    $("rejectLateButton").addEventListener("click", () => decideLate("REJECTED"));
+    function goHome() {
+      if (state.redirectTimer) clearTimeout(state.redirectTimer);
+      window.location.assign(NSA_ANNUAL_CONFIG.homeUrl);
+    }
+    $("homeHeaderButton").addEventListener("click", goHome);
+    $("returnHomeButton").addEventListener("click", goHome);
+
+    readParams();
+    loadEvaluationState();
+  </script>
+</body>
+</html>

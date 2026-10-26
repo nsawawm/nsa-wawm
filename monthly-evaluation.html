@@ -9,7 +9,7 @@
   <meta name="theme-color" content="#006b3f">
   <meta name="description" content="NSA WAWM monthly evaluation submission">
   <title>Monthly Evaluation | NSA WAWM</title>
-  <link rel="icon" href="./assets/nsa-logo-placeholder.svg" type="image/svg+xml">
+  <link rel="icon" href="./assets/my_logo.png" type="image/png">
   <style>
     :root {
       --green: #006b3f;
@@ -193,6 +193,10 @@
       color: var(--green);
       font-size: 15px;
     }
+     .card-heading-icon-svg{width:17px;height:17px;display:block;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+     .action-icon-svg{width:16px;height:16px;display:block;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+     .button-icon-svg{width:14px;height:14px;display:block;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
     .detail-list { display: grid; gap: 10px; margin: 0; }
     .detail-row {
       display: grid;
@@ -383,7 +387,7 @@
   <main class="portal" aria-label="NSA WAWM monthly evaluation">
     <header class="portal-header">
       <a class="brand-logo" href="./index.html" aria-label="NSA WAWM home">
-        <img src="./assets/nsa-logo-placeholder.svg" alt="National Service Authority logo" width="74" height="74">
+        <img src="./assets/my_logo.png" alt="National Service Authority logo" width="74" height="74">
       </a>
       <div class="brand-copy">
         <p class="brand-kicker">National Service Authority</p>
@@ -391,7 +395,7 @@
         <p class="brand-subtitle">Wassa Amenfi West Municipal Secretariat · Officer Portal</p>
       </div>
       <div class="header-actions">
-        <button class="header-button" id="homeHeaderButton" type="button"><span aria-hidden="true">←</span> Home</button>
+        <button class="header-button" id="homeHeaderButton" type="button"><span aria-hidden="true">&#8592;</span> Home</button>
       </div>
     </header>
 
@@ -402,9 +406,9 @@
         <p class="section-description">Confirm the personnel and evaluation period before submitting the official office capture code.</p>
 
         <section class="info-card" aria-labelledby="personnelHeading">
-          <h3 class="card-heading" id="personnelHeading"><span class="card-heading-icon" aria-hidden="true">♙</span>Personnel Details</h3>
+          <h3 class="card-heading" id="personnelHeading"><span class="card-heading-icon" aria-hidden="true"><svg class="card-heading-icon-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.2"/><path d="M5.5 20c.7-4 2.9-6 6.5-6s5.8 2 6.5 6"/></svg></span>Personnel Details</h3>
           <dl class="detail-list">
-            <div class="detail-row"><dt>Full name</dt><dd id="personName">Loading…</dd></div>
+            <div class="detail-row"><dt>Full name</dt><dd id="personName">Loading&#8230;</dd></div>
             <div class="detail-row"><dt>NSS number</dt><dd id="personNss">—</dd></div>
             <div class="detail-row"><dt>Batch</dt><dd id="personBatch">—</dd></div>
             <div class="detail-row"><dt>Posted to</dt><dd id="personCompany">—</dd></div>
@@ -412,7 +416,7 @@
         </section>
 
         <section class="info-card" aria-labelledby="periodHeading">
-          <h3 class="card-heading" id="periodHeading"><span class="card-heading-icon" aria-hidden="true">▦</span>Evaluation Period</h3>
+          <h3 class="card-heading" id="periodHeading"><span class="card-heading-icon" aria-hidden="true"><svg class="card-heading-icon-svg" viewBox="0 0 24 24" aria-hidden="true"><rect x="4.5" y="5" width="15" height="15" rx="2"/><path d="M8 3.5v3M16 3.5v3M4.5 9h15M8 12.5h3M13 12.5h3M8 16h3"/></svg></span>Evaluation Period</h3>
           <div class="period-grid">
             <div class="period-item"><span class="period-label">Month</span><strong class="period-value" id="periodMonth">—</strong></div>
             <div class="period-item"><span class="period-label">Year</span><strong class="period-value" id="periodYear">—</strong></div>
@@ -420,8 +424,8 @@
         </section>
 
         <section class="info-card" aria-labelledby="statusHeading">
-          <h3 class="card-heading" id="statusHeading"><span class="card-heading-icon" aria-hidden="true">✓</span>Submission Status</h3>
-          <div class="status-box pending" id="submissionStatus" role="status" aria-live="polite">Checking eligibility…</div>
+          <h3 class="card-heading" id="statusHeading"><span class="card-heading-icon" aria-hidden="true"><svg class="card-heading-icon-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.2 4.2L19 7"/></svg></span>Submission Status</h3>
+          <div class="status-box pending" id="submissionStatus" role="status" aria-live="polite">Checking eligibility&#8230;</div>
         </section>
       </section>
 
@@ -446,14 +450,14 @@
             aria-describedby="captureHelp"
           >
           <div class="capture-actions">
-            <button class="scan-button" id="scanCodeButton" type="button"><span aria-hidden="true">▦</span> Scan Code</button>
+            <button class="scan-button" id="scanCodeButton" type="button"><span aria-hidden="true"><svg class="action-icon-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V5h4M15 5h4v4M20 15v4h-4M9 19H5v-4"/><rect x="8" y="8" width="8" height="8" rx="1.5"/></svg></span> Scan Code</button>
             <button class="scan-button" id="clearCodeButton" type="button">Clear Code</button>
           </div>
           <p class="helper-text" id="captureHelp">Use the scan button to open the secure camera page. Camera access requires HTTPS and browser permission.</p>
         </section>
 
         <button class="submit-button" id="submitButton" type="button" disabled>
-          <span id="submitButtonLabel">Confirm Monthly Submission</span><span aria-hidden="true">→</span>
+          <span id="submitButtonLabel">Confirm Monthly Submission</span><span aria-hidden="true">&#8594;</span>
         </button>
         <button class="home-button" id="returnHomeButton" type="button" hidden>Return Home Now</button>
         <p class="message" id="pageMessage" role="status" aria-live="polite"></p>
@@ -615,7 +619,7 @@
         $("personName").textContent = p.name || "Not available";
         $("personNss").textContent = p.nss || state.nss;
         $("personBatch").textContent = p.batch || "Not available";
-        $("personCompany").textContent = p.companyPostedTo || "Not available";
+        $("personCompany").textContent = p.companyPostedTo || p.placeOfPosting || p.postedTo || "Not available";
 
         if (result.alreadySubmitted && !state.updateExisting) {
           renderRejected("This monthly evaluation has already been submitted.");

@@ -1,0 +1,522 @@
+<!-- OFFICER LOGIN DESIGN START -->
+<style id="officer-login-design">
+:root{
+  --login-green:#006b3f;
+  --login-deep:#004d2c;
+  --login-bright:#28c96b;
+  --login-gold:#ffdc00;
+  --login-ink:#123b2c;
+}
+
+#officerHome{
+  min-height:100vh;
+  min-height:100dvh;
+  width:100%;
+  padding:24px;
+  color:#fff;
+  font-family:Inter,Roboto,"Segoe UI",Arial,sans-serif;
+  background:
+    linear-gradient(135deg,transparent 0 48%,rgba(40,201,107,.96) 48% 68%,transparent 68%),
+    linear-gradient(135deg,#005b36 0%,#007747 52%,#005a35 100%);
+  background-attachment:fixed;
+}
+
+#officerHome .officer-main{
+  width:min(1120px,100%);
+  margin:0 auto;
+  padding:0!important;
+}
+
+#officerHome .officer-card{
+  position:relative;
+  width:100%;
+  max-width:none;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:5px!important;
+  overflow:hidden;
+  background:#fff!important;
+  box-shadow:0 22px 48px rgba(0,35,20,.24),0 7px 0 rgba(0,32,18,.20)!important;
+}
+
+#officerHome .officer-brand{
+  position:relative;
+  min-height:130px;
+  padding:20px 150px 18px 150px!important;
+  text-align:left;
+  color:#fff;
+  background:var(--login-bright)!important;
+  overflow:hidden;
+  border:0!important;
+  clip-path:none!important;
+}
+
+#officerHome .officer-brand:before,
+#officerHome .officer-brand:after{
+  content:"";
+  position:absolute;
+  pointer-events:none;
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:50%;
+  z-index:0;
+}
+
+#officerHome .officer-brand:before{
+  width:320px;height:320px;top:-190px;left:-170px;
+  box-shadow:0 0 0 28px rgba(255,255,255,.035),0 0 0 58px rgba(255,255,255,.025);
+}
+
+#officerHome .officer-brand:after{
+  width:250px;height:250px;right:-170px;bottom:-155px;
+  box-shadow:0 0 0 30px rgba(255,255,255,.035);
+}
+
+#officerHome .officer-logo{
+  position:absolute!important;
+  left:28px;
+  top:18px;
+  width:104px!important;
+  height:94px!important;
+  margin:0!important;
+  padding:7px!important;
+  object-fit:contain!important;
+  background:#fff;
+  border-radius:3px;
+  z-index:2;
+}
+
+#officerHome .officer-brand .title{
+  position:relative;
+  z-index:2;
+  margin:0 0 7px!important;
+  color:#fff!important;
+  font-size:clamp(24px,3vw,32px)!important;
+  line-height:1.12!important;
+  font-weight:850!important;
+  letter-spacing:-.5px;
+}
+
+#officerHome .officer-brand p{
+  position:relative;
+  z-index:2;
+  margin:3px 0!important;
+  color:rgba(255,255,255,.95)!important;
+  font-size:12px!important;
+  line-height:1.45!important;
+}
+
+#officerHome #loggedOfficer{
+  display:inline-block;
+  position:relative;
+  z-index:2;
+  margin-top:8px!important;
+  padding:7px 11px!important;
+  border:1px solid rgba(255,255,255,.45);
+  border-radius:999px;
+  color:#fff!important;
+  background:rgba(0,77,44,.18);
+  font-size:10px!important;
+  font-weight:800!important;
+}
+
+#officerHome .officer-logout{
+  position:absolute!important;
+  z-index:5;
+  top:27px!important;
+  right:28px!important;
+  min-height:40px!important;
+  margin:0!important;
+  padding:10px 17px!important;
+  border:1px solid rgba(255,255,255,.55)!important;
+  border-radius:999px!important;
+  background:transparent!important;
+  color:#fff!important;
+  font-size:10px!important;
+  font-weight:850!important;
+  letter-spacing:.7px;
+  text-transform:uppercase;
+  box-shadow:none!important;
+}
+
+#officerHome .qr-card{
+  position:relative;
+  min-height:420px;
+  margin:0!important;
+  padding:54px 38px 42px!important;
+  border:0!important;
+  border-radius:0!important;
+  background:#fff!important;
+  box-shadow:none!important;
+  color:var(--login-ink);
+  display:block!important;
+}
+
+#officerHome .qr-card:before{
+  content:"QUICK ACTION";
+  display:block;
+  margin:0 0 10px;
+  color:#006b3f;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:2px;
+}
+
+#officerHome .qr-card h3{
+  margin:0 0 10px!important;
+  color:#123b2c!important;
+  font-size:clamp(25px,3vw,34px)!important;
+  line-height:1.12!important;
+  font-weight:850!important;
+  letter-spacing:-.5px;
+}
+
+#officerHome .qr-card h3:after{
+  content:"";
+  display:block;
+  width:54px;
+  height:2px;
+  margin-top:15px;
+  background:#006b3f;
+}
+
+#officerHome .qr-card p{
+  margin:0 0 24px!important;
+  max-width:520px;
+  color:#596b64!important;
+  font-size:13px!important;
+  line-height:1.6!important;
+}
+
+#officerHome .qr-image-circle{
+  float:left;
+  width:78px!important;
+  height:78px!important;
+  margin:0 18px 12px 0;
+  border-radius:50%;
+  background:#e5f6ef!important;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+#officerHome .qr-image-circle img{
+  width:58px!important;
+  height:58px!important;
+  object-fit:contain;
+}
+
+#officerHome .qr-card button{
+  display:block;
+  width:100%!important;
+  min-height:47px!important;
+  margin:0!important;
+  padding:10px 18px!important;
+  border:0!important;
+  border-radius:999px!important;
+  background:#006b3f!important;
+  color:#fff!important;
+  font-size:11px!important;
+  font-weight:900!important;
+  letter-spacing:.8px;
+  text-transform:uppercase;
+  box-shadow:0 4px 0 rgba(0,35,20,.08)!important;
+}
+
+#officerHome .qr-card button:hover{
+  background:#004d2c!important;
+}
+
+/* The existing OR element becomes the visual manual-entry panel heading. */
+#officerHome .portal-or{
+  position:absolute!important;
+  top:130px;
+  right:0;
+  width:50%;
+  height:420px;
+  margin:0!important;
+  padding:54px 38px 0!important;
+  display:block!important;
+  color:#fff!important;
+  background:#006b3f!important;
+  font-size:10px!important;
+  line-height:1!important;
+  font-weight:900!important;
+  letter-spacing:2px!important;
+  text-align:left!important;
+  border:0!important;
+}
+
+#officerHome .portal-or:before{
+  content:"MANUAL ENTRY";
+  display:block;
+  margin:0 0 14px;
+  background:none!important;
+}
+
+#officerHome .portal-or:after{
+  content:"Enter details manually";
+  display:block;
+  color:#fff;
+  font-size:clamp(25px,3vw,34px);
+  line-height:1.12;
+  font-weight:850;
+  letter-spacing:-.5px;
+}
+
+#officerHome #service,
+#officerHome #nss,
+#officerHome .monthly-period-fields,
+#officerHome .continue-btn,
+#officerHome #message{
+  position:relative;
+  z-index:3;
+  margin-left:calc(50% + 38px)!important;
+  width:calc(50% - 76px)!important;
+}
+
+#officerHome #service{
+  margin-top:-352px!important;
+  margin-bottom:12px!important;
+  min-height:47px!important;
+  padding:0 15px!important;
+  border:1px solid rgba(255,255,255,.9)!important;
+  border-radius:999px!important;
+  background:#fff!important;
+  color:#123b2c!important;
+  font-size:12px!important;
+}
+
+#officerHome #nss{
+  min-height:47px!important;
+  margin-bottom:14px!important;
+  padding:0 16px!important;
+  border:1px solid rgba(255,255,255,.9)!important;
+  border-radius:999px!important;
+  background:#fff!important;
+  color:#123b2c!important;
+  font-size:12px!important;
+}
+
+#officerHome #nss::placeholder{color:#718078;opacity:1}
+
+#officerHome .monthly-period-fields{
+  padding:14px!important;
+  margin-bottom:14px!important;
+  border:1px solid rgba(255,255,255,.55)!important;
+  border-radius:12px!important;
+  background:rgba(255,255,255,.10)!important;
+  color:#fff!important;
+}
+
+#officerHome .monthly-period-fields select{
+  min-height:40px;
+  border:1px solid #dce5ed;
+  border-radius:9px;
+  background:#fff;
+  color:#123b2c;
+  padding:7px 10px;
+  font-size:12px;
+}
+
+#officerHome .continue-btn{
+  min-height:47px!important;
+  margin-top:0!important;
+  padding:10px 18px!important;
+  border:0!important;
+  border-radius:999px!important;
+  background:#ffdc00!important;
+  color:#004d2c!important;
+  font-size:11px!important;
+  font-weight:950!important;
+  letter-spacing:.8px;
+  text-transform:uppercase;
+  box-shadow:0 4px 0 rgba(0,35,20,.08)!important;
+}
+
+#officerHome #message{color:#fff}
+
+#officerHome > footer,
+#officerHome > .admin-footer,
+#officerHome > .footer,
+#officerHome > .site-footer{
+  width:min(1120px,100%);
+  margin:18px auto 0!important;
+  color:rgba(255,255,255,.9);
+}
+
+@media(max-width:680px){
+  #officerHome{
+    min-height:100vh;
+    min-height:100dvh;
+    padding:0;
+    background:
+      linear-gradient(135deg,transparent 0 43%,rgba(40,201,107,.96) 43% 63%,transparent 63%),
+      linear-gradient(135deg,#005b36 0%,#007747 52%,#005a35 100%);
+    background-attachment:fixed;
+  }
+
+  #officerHome .officer-main{width:100%;padding:0!important}
+  #officerHome .officer-card{border-radius:0!important;box-shadow:none!important}
+
+  #officerHome .officer-brand{
+    min-height:97px;
+    padding:13px 78px 10px 70px!important;
+    background:var(--login-bright)!important;
+  }
+
+  #officerHome .officer-logo{
+    left:14px;top:15px;
+    width:44px!important;height:43px!important;
+    padding:3px!important;border-radius:2px;
+  }
+
+  #officerHome .officer-brand .title{
+    margin:0 0 4px!important;
+    font-size:18px!important;
+    line-height:1.08!important;
+  }
+
+  #officerHome .officer-brand p{
+    margin:2px 0!important;
+    font-size:8px!important;
+    line-height:1.3!important;
+  }
+
+  #officerHome #loggedOfficer{
+    margin-top:4px!important;
+    padding:4px 7px!important;
+    font-size:7px!important;
+  }
+
+  #officerHome .officer-logout{
+    top:19px!important;right:12px!important;
+    min-height:29px!important;padding:6px 10px!important;
+    font-size:7px!important;letter-spacing:.45px;
+  }
+
+  #officerHome .qr-card{
+    min-height:320px;
+    padding:24px 21px 25px!important;
+  }
+
+  #officerHome .qr-card:before{
+    margin-bottom:8px;font-size:8px;letter-spacing:1.5px;
+  }
+
+  #officerHome .qr-card h3{
+    font-size:23px!important;margin-bottom:7px!important;
+  }
+
+  #officerHome .qr-card h3:after{
+    width:42px;margin-top:11px;
+  }
+
+  #officerHome .qr-card p{
+    margin-bottom:18px!important;
+    font-size:10px!important;line-height:1.45!important;
+  }
+
+  #officerHome .qr-image-circle{
+    width:62px!important;height:62px!important;margin-right:14px;
+  }
+
+  #officerHome .qr-image-circle img{
+    width:46px!important;height:46px!important;
+  }
+
+  #officerHome .qr-card button{
+    min-height:43px!important;font-size:9px!important;
+  }
+
+  #officerHome .portal-or{
+    position:relative!important;
+    top:auto;right:auto;width:100%;height:auto;
+    min-height:315px;
+    margin:0!important;
+    padding:22px 21px 28px!important;
+    background:#006b3f!important;
+  }
+
+  #officerHome .portal-or:before{
+    margin-bottom:10px;font-size:8px;letter-spacing:1.5px;
+  }
+
+  #officerHome .portal-or:after{font-size:23px}
+
+  #officerHome #service,
+  #officerHome #nss,
+  #officerHome .monthly-period-fields,
+  #officerHome .continue-btn,
+  #officerHome #message{
+    width:calc(100% - 42px)!important;
+    margin-left:21px!important;
+    margin-right:21px!important;
+  }
+
+  #officerHome #service{
+    margin-top:-249px!important;
+    margin-bottom:10px!important;
+    min-height:47px!important;font-size:11px!important;
+  }
+
+  #officerHome #nss{
+    min-height:47px!important;margin-bottom:11px!important;font-size:11px!important;
+  }
+
+  #officerHome .monthly-period-fields{margin-bottom:11px!important}
+
+  #officerHome .continue-btn{
+    min-height:45px!important;font-size:10px!important;
+  }
+
+  #officerHome > footer,
+  #officerHome > .admin-footer,
+  #officerHome > .footer,
+  #officerHome > .site-footer{
+    width:100%;margin:0!important;padding:9px 8px 12px!important;font-size:8px!important;
+  }
+}
+
+@media(max-width:390px){
+  #officerHome .officer-brand{
+    min-height:97px;padding-left:66px!important;padding-right:74px!important;
+  }
+
+  #officerHome .officer-logo{
+    left:12px;width:42px!important;height:41px!important;
+  }
+
+  #officerHome .officer-brand .title{font-size:17px!important}
+
+  #officerHome .officer-logout{
+    right:10px!important;padding:6px 8px!important;font-size:6.5px!important;
+  }
+
+  #officerHome .qr-card{
+    padding-left:18px!important;padding-right:18px!important;
+  }
+
+  #officerHome #service,
+  #officerHome #nss,
+  #officerHome .monthly-period-fields,
+  #officerHome .continue-btn,
+  #officerHome #message{
+    width:calc(100% - 36px)!important;
+    margin-left:18px!important;margin-right:18px!important;
+  }
+
+  #officerHome .portal-or{
+    padding-left:18px!important;padding-right:18px!important;
+  }
+
+  #officerHome #service{margin-top:-249px!important}
+}
+
+@media(prefers-reduced-motion:reduce){
+  #officerHome *,#officerHome *::before,#officerHome *::after{
+    transition:none!important;animation:none!important;
+  }
+}
+</style>
+<!-- OFFICER LOGIN DESIGN END -->

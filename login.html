@@ -9,7 +9,7 @@
   <meta name="theme-color" content="#006b3f">
   <meta name="description" content="NSA WAWM Officer Portal sign in">
   <title>NSA WAWM Officer Portal | Sign In</title>
-  <link rel="icon" href="./assets/nsa-logo-placeholder.svg" type="image/svg+xml">
+  <link rel="icon" href="./assets/my_logo.png" type="image/png">
   <style>
     :root {
       --green: #006b3f;
@@ -368,7 +368,7 @@
       <section class="brand-panel" aria-labelledby="brandTitle">
         <div class="brand-content">
           <div class="logo-wrap">
-            <img class="brand-logo" src="./assets/nsa-logo-placeholder.svg" alt="National Service Authority logo" width="112" height="108">
+            <img class="brand-logo" src="./assets/my_logo.png" alt="National Service Authority logo" width="112" height="108">
           </div>
           <p class="brand-kicker">National Service Authority</p>
           <h1 class="brand-title" id="brandTitle">Welcome to NSA WAWM</h1>
@@ -481,13 +481,14 @@
       setBusy(true);
       try {
         const response = await fetch(NSA_LOGIN_CONFIG.apiUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            action: "loginSystemUser",
-            payload: { email, password }
-          })
-        });
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    action: "invoke",
+    method: "loginSystemUser",
+    args: [email, password]
+  })
+});
 
         const result = await response.json();
         if (!response.ok || !result || result.status !== "SUCCESS" || !result.token || !result.role) {
