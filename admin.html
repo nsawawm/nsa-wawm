@@ -8,6 +8,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light">
 <title>NSA WAWM Administration</title>
+  <link rel="icon" type="image/png" href="./assets/my_logo.png">
 
    
 <style>
@@ -1957,8 +1958,15 @@ function statusBadge(value) {
 function renderSafeTable(targetId, columns, rows, emptyTitle, emptyText) {
   const target = document.getElementById(targetId); if (!target) return;
   if (!Array.isArray(rows) || !rows.length) { target.innerHTML = '<div class="empty-state"><strong>' + escapeHTML(emptyTitle || "No records found") + '</strong>' + escapeHTML(emptyText || "There are no records to display.") + '</div>'; return; }
-  let html = '<div class="table-wrap"><table><thead><tr>' + columns.map(function(c) { return '<th>' + escapeHTML(c.label) + '</th>'; }).join("") + '</tr></thead><tbody>';
-  html += rows.map(function(row) { return '<tr>' + columns.map(function(c) { let value = typeof c.render === "function" ? c.render(row[c.key], row) : escapeHTML(row[c.key] == null || row[c.key] === "" ? "—" : row[c.key]); return '<td>' + value + '</td>'; }).join("") + '</tr>'; }).join("");
+  // Personnel-oriented lists should identify the person by name wherever the API returns it.
+  const nameAliases = ["full name", "name", "personnel name", "fullname", "personnelname"];
+  const rowKeys = Object.keys(rows[0] || {});
+  const nameKey = rowKeys.find(function(k) { return nameAliases.indexOf(String(k).replace(/[_-]/g, " ").replace(/\s+/g, " ").trim().toLowerCase()) >= 0 && rows.some(function(r) { return String(r[k] || "").trim(); }); });
+  const hasNameColumn = (columns || []).some(function(c) { return nameAliases.indexOf(String(c.key || "").replace(/[_-]/g, " ").replace(/\s+/g, " ").trim().toLowerCase()) >= 0; });
+  const displayColumns = (columns || []).slice();
+  if (nameKey && !hasNameColumn) displayColumns.splice(Math.min(1, displayColumns.length), 0, {key:nameKey, label:"Personnel name"});
+  let html = '<div class="table-wrap"><table><thead><tr>' + displayColumns.map(function(c) { return '<th>' + escapeHTML(c.label) + '</th>'; }).join("") + '</tr></thead><tbody>';
+  html += rows.map(function(row) { return '<tr>' + displayColumns.map(function(c) { let value = typeof c.render === "function" ? c.render(row[c.key], row) : escapeHTML(row[c.key] == null || row[c.key] === "" ? "—" : row[c.key]); return '<td>' + value + '</td>'; }).join("") + '</tr>'; }).join("");
   target.innerHTML = html + '</tbody></table></div>';
 }
 function initAdminShell() {
@@ -2033,13 +2041,39 @@ function navigateAdmin(page, params) { hideLoader(); openPage(page, params || {}
 <section class="page-heading"><div><p class="eyebrow">NSA WAWM · Administration</p><h1 class="title">Administration Dashboard</h1><p class="page-subtitle">A live overview of personnel registration, evaluation workload and system activity.</p></div><div class="page-actions"></div></section>
 
 <section class="kpi-grid" id="dashboardCards" aria-live="polite"><div class="kpi-card"><div class="kpi-label">Loading dashboard metrics</div><div class="kpi-value">—</div></div></section>
+
+<section class="card" aria-label="Dashboard reporting filters" style="margin-bottom:18px;">
+  <div class="section-heading"><div><h2>Reporting period</h2><p>Select the reporting interval and the month used for current monthly compliance.</p></div></div>
+  <div class="toolbar">
+    <label style="flex:1 1 150px;">Trend interval
+      <select id="dashboardGranularity"><option value="DAY">Daily · last 30 days</option><option value="MONTH" selected>Monthly · last 12 months</option><option value="YEAR">Yearly · last 5 years</option></select>
+    </label>
+    <label style="flex:1 1 130px;">Compliance month
+      <select id="dashboardMonth"></select>
+    </label>
+    <label style="flex:1 1 110px;">Compliance year
+      <select id="dashboardYear"></select>
+    </label>
+    <button type="button" onclick="loadDashboard()">Apply filters</button>
+  </div>
+</section>
+
 <section class="grid" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));">
   <div class="card"><div class="section-heading"><div><h2>Allowance distribution</h2><p>Registered personnel by allowance category</p></div></div><div style="height:280px;position:relative"><canvas id="allowanceChart" aria-label="Allowance distribution chart"></canvas></div><div id="allowanceEmpty" class="empty-state" style="display:none">No allowance data available.</div></div>
   <div class="card"><div class="section-heading"><div><h2>Batch distribution</h2><p>Registered personnel across batches</p></div></div><div style="height:280px;position:relative"><canvas id="batchChart" aria-label="Batch distribution chart"></canvas></div><div id="batchEmpty" class="empty-state" style="display:none">No batch data available.</div></div>
-  <div class="card"><div class="section-heading"><div><h2>Registration trend by year</h2><p>Each series represents a batch and allowance type combination.</p></div></div><div style="height:320px;position:relative"><canvas id="registrationChart" aria-label="Year-on-year registration trend by batch and allowance type"></canvas></div><div id="registrationEmpty" class="empty-state" style="display:none">No registration trend data available.</div></div>
-  <div class="card"><div class="section-heading"><div><h2>Monthly evaluation trend</h2><p>Submitted monthly evaluations by calendar year and batch.</p></div></div><div style="height:320px;position:relative"><canvas id="monthlyEvaluationTrendChart" aria-label="Year-on-year monthly evaluation trend by batch"></canvas></div><div id="monthlyEvaluationTrendEmpty" class="empty-state" style="display:none">No monthly evaluation trend data available.</div></div>
-  <div class="card"><div class="section-heading"><div><h2>Annual evaluation trend</h2><p>Submitted annual evaluations by service year and batch.</p></div></div><div style="height:320px;position:relative"><canvas id="annualEvaluationTrendChart" aria-label="Year-on-year annual evaluation trend by batch"></canvas></div><div id="annualEvaluationTrendEmpty" class="empty-state" style="display:none">No annual evaluation trend data available.</div></div>
+  <div class="card"><div class="section-heading"><div><h2>Personnel registrations over time</h2><p>Daily, monthly or yearly registrations, based on the selected trend interval.</p></div></div><div style="height:320px;position:relative"><canvas id="registrationChart" aria-label="Year-on-year registration trend by batch and allowance type"></canvas></div><div id="registrationEmpty" class="empty-state" style="display:none">No registration trend data available.</div></div>
+  <div class="card"><div class="section-heading"><div><h2>Monthly evaluation status</h2><p>Submitted and pending eligible evaluations for each of the last 12 monthly periods.</p></div></div><div style="height:320px;position:relative"><canvas id="monthlyEvaluationTrendChart" aria-label="Year-on-year monthly evaluation trend by batch"></canvas></div><div id="monthlyEvaluationTrendEmpty" class="empty-state" style="display:none">No monthly evaluation trend data available.</div></div>
+  <div class="card"><div class="section-heading"><div><h2>Annual evaluation submissions</h2><p>Submitted annual evaluations grouped by recorded service-year period.</p></div></div><div style="height:320px;position:relative"><canvas id="annualEvaluationTrendChart" aria-label="Year-on-year annual evaluation trend by batch"></canvas></div><div id="annualEvaluationTrendEmpty" class="empty-state" style="display:none">No annual evaluation trend data available.</div></div>
   <div class="card"><div class="section-heading"><div><h2>Evaluation workload</h2><p>Outstanding monthly and annual evaluations.</p></div></div><div style="height:280px;position:relative"><canvas id="evaluationChart" aria-label="Evaluation workload chart"></canvas></div><div id="evaluationEmpty" class="empty-state" style="display:none">No evaluation workload data available.</div></div>
+</section>
+<section class="grid" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));margin-top:18px;">
+  <div class="card"><div class="section-heading"><div><h2>Selected monthly compliance</h2><p id="monthlyComplianceCaption">Submitted versus pending for the selected month.</p></div></div><div style="height:260px;position:relative"><canvas id="selectedMonthlyComplianceChart" aria-label="Selected monthly evaluation compliance"></canvas></div><div id="selectedMonthlyComplianceEmpty" class="empty-state" style="display:none">Monthly compliance data is unavailable.</div><div id="selectedMonthlyComplianceMeta" class="field-help"></div></div>
+  <div class="card"><div class="section-heading"><div><h2>Current annual compliance</h2><p>Submitted versus pending for the current service-year assignment.</p></div></div><div style="height:260px;position:relative"><canvas id="selectedAnnualComplianceChart" aria-label="Current annual evaluation compliance"></canvas></div><div id="selectedAnnualComplianceEmpty" class="empty-state" style="display:none">Annual compliance data is unavailable.</div><div id="selectedAnnualComplianceMeta" class="field-help"></div></div>
+</section>
+<section class="grid" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));margin-top:18px;">
+  <div class="card"><div class="section-heading"><div><h2>Recent registrations</h2><p>Latest registered personnel records.</p></div></div><div id="recentRegistrations"><div class="empty-state">Loading recent registrations…</div></div></div>
+  <div class="card"><div class="section-heading"><div><h2>Recent monthly evaluations</h2><p>Latest submitted monthly evaluation periods.</p></div></div><div id="recentMonthlySubmissions"><div class="empty-state">Loading monthly submissions…</div></div></div>
+  <div class="card"><div class="section-heading"><div><h2>Recent annual evaluations</h2><p>Latest submitted annual evaluation periods.</p></div></div><div id="recentAnnualSubmissions"><div class="empty-state">Loading annual submissions…</div></div></div>
 </section>
 <section class="card"><div class="section-heading"><div><h2>Quick actions</h2><p>Common administration tasks</p></div></div><div class="toolbar"><button type="button" onclick="navigateAdmin('personnel-management')">View personnel</button><button type="button" class="secondary" onclick="navigateAdmin('master-import')">Import posting file</button><button type="button" class="secondary" onclick="navigateAdmin('batch-form')">Create batch</button><button type="button" class="secondary" onclick="navigateAdmin('reports')">Generate report</button></div></section>
 
@@ -2049,7 +2083,22 @@ function navigateAdmin(page, params) { hideLoader(); openPage(page, params || {}
 <script>
 let adminCharts = {};
 let dashboardWatchdog = null;
-window.onload = function() { requireAnyRole(["ADMIN"], function() { initAdminShell(); loadDashboard(); }); };
+window.onload = function() { requireAnyRole(["ADMIN"], function() { initAdminShell(); initDashboardFilters(); loadDashboard(); }); };
+function initDashboardFilters() {
+ const month = document.getElementById("dashboardMonth"), year = document.getElementById("dashboardYear");
+ const names = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+ month.innerHTML = names.map(function(n,i){return '<option value="'+(i+1)+'">'+n+'</option>';}).join("");
+ const current = new Date();
+ month.value = String(current.getMonth()+1);
+ const startYear = Math.min(2020,current.getFullYear()-4);
+ const years = [];
+ for(let y=startYear;y<=current.getFullYear()+1;y++) years.push(y);
+ year.innerHTML = years.map(function(y){return '<option value="'+y+'">'+y+'</option>';}).join("");
+ year.value = String(current.getFullYear());
+}
+function getDashboardFilters() {
+ return {granularity:document.getElementById("dashboardGranularity").value,month:Number(document.getElementById("dashboardMonth").value),year:Number(document.getElementById("dashboardYear").value)};
+}
 function loadDashboard() {
   if (dashboardWatchdog) clearTimeout(dashboardWatchdog);
   let requestFinished = false;
@@ -2075,15 +2124,21 @@ function loadDashboard() {
       renderDashboardCards(data);
       renderDashboardCharts(data);
     })
-    .getAdminDashboardAnalytics(getUserSession());
+    .getAdminDashboardAnalytics(getUserSession(), getDashboardFilters());
 }
 function renderDashboardCards(data) {
+ const op = data.operational || {};
+ const monthly = op.selectedMonthlyCompliance && op.selectedMonthlyCompliance.overall || {};
+ const annual = op.selectedAnnualCompliance && op.selectedAnnualCompliance.overall || {};
+ const monthName = document.getElementById("dashboardMonth").selectedOptions[0].textContent;
  const cards = [
   ["Total personnel", data.totalPersonnel, "Records in the district master list", "♙"],
   ["Registered", data.registered, "Completed personnel registration", "✓"],
   ["Registration rate", (Number(data.rate)||0)+"%", "Registered / master personnel", "%"],
-  ["Monthly pending", data.monthlyPending, "Outstanding monthly evaluations", "◷"],
-  ["Annual pending", data.annualPending, "Outstanding annual evaluations", "▤"],
+  ["Registrations this month", op.registeredInSelectedMonth, monthName+" "+op.selectedYear, "＋"],
+  ["Registrations this year", op.registeredInSelectedYear, "Calendar year "+op.selectedYear, "▦"],
+  ["Monthly compliance", (Number(monthly.compliance)||0)+"%", formatCount(monthly.submitted)+" submitted · "+formatCount(monthly.pending)+" pending", "◷"],
+  ["Annual compliance", (Number(annual.compliance)||0)+"%", formatCount(annual.submitted)+" submitted · "+formatCount(annual.pending)+" pending", "▤"],
   ["Active users", data.users, "Enabled system accounts", "♙"]
  ];
  document.getElementById("dashboardCards").innerHTML = cards.map(function(c) { return '<article class="kpi-card"><span class="kpi-mark">'+escapeHTML(c[3])+'</span><div class="kpi-label">'+escapeHTML(c[0])+'</div><div class="kpi-value">'+escapeHTML(typeof c[1] === "string" ? c[1] : formatCount(c[1]))+'</div><div class="kpi-note">'+escapeHTML(c[2])+'</div></article>'; }).join("");
@@ -2108,13 +2163,31 @@ function renderTrendChart(id, trend, emptyId) {
  adminCharts[id] = new Chart(canvas, { type: "line", data: { labels: labels, datasets: series.map(function(ds, i) { const colour = palette[i % palette.length]; return { label: ds.label, data: ds.data, borderColor: colour, backgroundColor: colour, borderWidth: 2, pointRadius: 3, pointHoverRadius: 5, tension: .25, fill: false }; }) }, options: { responsive: true, maintainAspectRatio: false, interaction: { mode: "index", intersect: false }, plugins: { legend: { display: true, position: "bottom", labels: { boxWidth: 12, usePointStyle: true } }, tooltip: { mode: "index", intersect: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: "#edf2ee" } }, x: { grid: { display: false } } } } });
 }
 function renderDashboardCharts(data) {
+ const op = data.operational || {};
  const allowance = data.allowance || {}; const batches = data.batches || data.batch || {};
  renderChart("allowanceChart", "doughnut", Object.keys(allowance), Object.values(allowance), "Personnel", "allowanceEmpty");
  renderChart("batchChart", "bar", Object.keys(batches), Object.values(batches), "Personnel", "batchEmpty");
- renderTrendChart("registrationChart", data.registrationTrend, "registrationEmpty");
- renderTrendChart("monthlyEvaluationTrendChart", data.monthlyEvaluationTrend, "monthlyEvaluationTrendEmpty");
- renderTrendChart("annualEvaluationTrendChart", data.annualEvaluationTrend, "annualEvaluationTrendEmpty");
+ renderTrendChart("registrationChart", op.registrationTrend || data.registrationTrend, "registrationEmpty");
+ renderTrendChart("monthlyEvaluationTrendChart", op.monthlyEvaluationTrend || data.monthlyEvaluationTrend, "monthlyEvaluationTrendEmpty");
+ renderTrendChart("annualEvaluationTrendChart", op.annualEvaluationTrend || data.annualEvaluationTrend, "annualEvaluationTrendEmpty");
  renderChart("evaluationChart", "doughnut", ["Monthly pending","Annual pending"], [Number(data.monthlyPending)||0,Number(data.annualPending)||0], "Pending", "evaluationEmpty");
+ const monthly = op.selectedMonthlyCompliance && op.selectedMonthlyCompliance.overall || {};
+ const annual = op.selectedAnnualCompliance && op.selectedAnnualCompliance.overall || {};
+ const monthName = document.getElementById("dashboardMonth").selectedOptions[0].textContent;
+ document.getElementById("monthlyComplianceCaption").textContent = monthName + " " + op.selectedYear + " compliance";
+ document.getElementById("selectedMonthlyComplianceMeta").textContent = "Eligible: " + formatCount(monthly.total) + " · Submitted: " + formatCount(monthly.submitted) + " · Pending: " + formatCount(monthly.pending) + " · Compliance: " + (Number(monthly.compliance)||0) + "%";
+ document.getElementById("selectedAnnualComplianceMeta").textContent = "Eligible: " + formatCount(annual.total) + " · Submitted: " + formatCount(annual.submitted) + " · Pending: " + formatCount(annual.pending) + " · Compliance: " + (Number(annual.compliance)||0) + "%";
+ renderChart("selectedMonthlyComplianceChart","doughnut",["Submitted","Pending"],[Number(monthly.submitted)||0,Number(monthly.pending)||0],"Personnel","selectedMonthlyComplianceEmpty");
+ renderChart("selectedAnnualComplianceChart","doughnut",["Submitted","Pending"],[Number(annual.submitted)||0,Number(annual.pending)||0],"Personnel","selectedAnnualComplianceEmpty");
+ renderDashboardActivity("recentRegistrations",op.recentRegistrations||[],["name","nss","batch","date"],["Personnel","NSS number","Batch","Registered"]);
+ renderDashboardActivity("recentMonthlySubmissions",op.recentMonthlySubmissions||[],["name","nss","period","date"],["Personnel","NSS number","Period","Submitted"]);
+ renderDashboardActivity("recentAnnualSubmissions",op.recentAnnualSubmissions||[],["name","nss","period","date"],["Personnel","NSS number","Service year","Submitted"]);
+}
+function renderDashboardActivity(targetId, rows, keys, labels) {
+ const target=document.getElementById(targetId);
+ if(!target)return;
+ if(!rows.length){target.innerHTML='<div class="empty-state">No records are available for this list.</div>';return;}
+ target.innerHTML='<div class="table-wrap"><table><thead><tr>'+labels.map(function(x){return '<th>'+escapeHTML(x)+'</th>';}).join('')+'</tr></thead><tbody>'+rows.map(function(r){return '<tr>'+keys.map(function(k){return '<td>'+escapeHTML(r[k]||"—")+'</td>';}).join('')+'</tr>';}).join('')+'</tbody></table></div>';
 }
 </script>
 </body>

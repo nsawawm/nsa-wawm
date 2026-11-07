@@ -329,13 +329,6 @@
       setStatus(message, "bad");
       $("submitButton").disabled = true;
     }
-      url.searchParams.set("page", "annual-evaluation");
-      url.searchParams.set("nssNumber", state.nss);
-      if (state.identifier) url.searchParams.set("identifier", state.identifier);
-      if (state.updateExisting) url.searchParams.set("updateExisting", "1");
-      else url.searchParams.delete("updateExisting");
-      return url.toString();
-    }
     async function submitEvaluation() {
       if (state.locked) return;
       if (!state.precheck || !state.precheck.canSubmit) {

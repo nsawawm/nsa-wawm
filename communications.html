@@ -8,6 +8,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light">
 <title>Personnel Communications | NSA WAWM</title>
+  <link rel="icon" type="image/png" href="./assets/my_logo.png">
 
 <style>
 /* =========================================================
@@ -1956,8 +1957,15 @@ function statusBadge(value) {
 function renderSafeTable(targetId, columns, rows, emptyTitle, emptyText) {
   const target = document.getElementById(targetId); if (!target) return;
   if (!Array.isArray(rows) || !rows.length) { target.innerHTML = '<div class="empty-state"><strong>' + escapeHTML(emptyTitle || "No records found") + '</strong>' + escapeHTML(emptyText || "There are no records to display.") + '</div>'; return; }
-  let html = '<div class="table-wrap"><table><thead><tr>' + columns.map(function(c) { return '<th>' + escapeHTML(c.label) + '</th>'; }).join("") + '</tr></thead><tbody>';
-  html += rows.map(function(row) { return '<tr>' + columns.map(function(c) { let value = typeof c.render === "function" ? c.render(row[c.key], row) : escapeHTML(row[c.key] == null || row[c.key] === "" ? "—" : row[c.key]); return '<td>' + value + '</td>'; }).join("") + '</tr>'; }).join("");
+  // Personnel-oriented lists should identify the person by name wherever the API returns it.
+  const nameAliases = ["full name", "name", "personnel name", "fullname", "personnelname"];
+  const rowKeys = Object.keys(rows[0] || {});
+  const nameKey = rowKeys.find(function(k) { return nameAliases.indexOf(String(k).replace(/[_-]/g, " ").replace(/\s+/g, " ").trim().toLowerCase()) >= 0 && rows.some(function(r) { return String(r[k] || "").trim(); }); });
+  const hasNameColumn = (columns || []).some(function(c) { return nameAliases.indexOf(String(c.key || "").replace(/[_-]/g, " ").replace(/\s+/g, " ").trim().toLowerCase()) >= 0; });
+  const displayColumns = (columns || []).slice();
+  if (nameKey && !hasNameColumn) displayColumns.splice(Math.min(1, displayColumns.length), 0, {key:nameKey, label:"Personnel name"});
+  let html = '<div class="table-wrap"><table><thead><tr>' + displayColumns.map(function(c) { return '<th>' + escapeHTML(c.label) + '</th>'; }).join("") + '</tr></thead><tbody>';
+  html += rows.map(function(row) { return '<tr>' + displayColumns.map(function(c) { let value = typeof c.render === "function" ? c.render(row[c.key], row) : escapeHTML(row[c.key] == null || row[c.key] === "" ? "—" : row[c.key]); return '<td>' + value + '</td>'; }).join("") + '</tr>'; }).join("");
   target.innerHTML = html + '</tbody></table></div>';
 }
 function initAdminShell() {
@@ -2246,10 +2254,10 @@ function renderCampaignPreview(res) {
   document.getElementById("previewSection").style.display = "block";
   document.getElementById("previewCampaignId").textContent = res.campaignId;
   const c = res.counts || {};
-  const cards = [["Eligible personnel",c.eligible], ["Email contacts missing",c.missingEmail], ["Phone contacts missing",c.missingPhone], ["SMS longer than 160 chars (info)",res.overLimitSmsCount]];
+  const cards = [["Eligible personnel",c.eligible], ["Email contacts missing",c.missingEmail], ["Phone contacts missing",c.missingPhone], ["SMS over 160 characters (info)",res.overLimitSmsCount], ["Daily email quota remaining",res.emailQuotaRemaining == null ? "Unavailable" : res.emailQuotaRemaining]];
   document.getElementById("previewSummary").innerHTML = cards.map(function(x) { return '<article class="kpi-card"><div class="kpi-label">' + escapeHTML(x[0]) + '</div><div class="kpi-value">' + formatCount(x[1]) + '</div></article>'; }).join("");
   let warning = renderReviewCounts(c);
-  if (res.overLimitSmsCount > 0) warning += '<div class="notice notice-warning" style="margin-top:10px;">' + formatCount(res.overLimitSmsCount) + ' personalised SMS message(s) exceed 160 characters. This is informational only; sending is allowed. Your SMS provider may split long messages into multiple billable segments.</div>';
+  if (res.overLimitSmsCount > 0) warning += '<div class="notice notice-warning" style="margin-top:10px;">' + formatCount(res.overLimitSmsCount) + ' personalised SMS message(s) exceed 160 characters. This is informational only. The system preserves the complete message; your SMS provider may split long messages into multiple billable segments.</div>';
   if (c.missingValidationDate > 0 || c.validationAfterCutoff > 0) warning += '<p class="field-help">Personnel without a recorded regional validation date or validated after the cutoff were excluded from the eligible list.</p>';
   document.getElementById("previewWarnings").innerHTML = warning;
   document.getElementById("previewRecipients").innerHTML = (res.recipients || []).map(function(p) {
@@ -2293,6 +2301,13 @@ function processNextCampaignBatch(id) {
     if (!res) { campaignBusy = false; hideLoader(); notify("No campaign batch response was received.", "error"); return; }
     if (res.status === "BUSY") { window.setTimeout(function() { processNextCampaignBatch(id); }, 900); return; }
     if (res.status !== "SUCCESS") { campaignBusy = false; hideLoader(); notify(res.message || "Campaign processing failed.", "error"); loadCampaignHistory(); return; }
+    if (res.quotaPaused) {
+      campaignBusy = false; hideLoader();
+      const message = "Campaign paused because the Google Apps Script daily email quota has been reached. " + formatCount(res.pending) + " message(s) remain pending. Resume the campaign after the quota resets.";
+      notify(message, "error");
+      document.getElementById("previewStatus").innerHTML = '<div class="notice notice-warning">' + escapeHTML(message) + '</div>';
+      loadCampaignHistory(); return;
+    }
     if (res.done) {
       campaignBusy = false; hideLoader();
       const message = "Campaign finished. Accepted: " + res.sent + "; failed: " + res.failed + "; missing contact: " + res.noContact + "; over-limit: " + res.overLimit + ".";
