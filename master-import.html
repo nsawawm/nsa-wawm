@@ -1,6 +1,8 @@
 <!doctype html>
 <html lang="en">
 <head>
+<link rel="icon" type="image/png" href="./assets/my_logo.png">
+
 <script src="./assets/config.js"></script>
 <script src="./assets/apps-script-bridge.js"></script>
 
@@ -8,7 +10,6 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light">
 <title>NSA WAWM Administration</title>
-  <link rel="icon" type="image/png" href="./assets/my_logo.png">
 
 <style>
 /* =========================================================
@@ -1957,15 +1958,8 @@ function statusBadge(value) {
 function renderSafeTable(targetId, columns, rows, emptyTitle, emptyText) {
   const target = document.getElementById(targetId); if (!target) return;
   if (!Array.isArray(rows) || !rows.length) { target.innerHTML = '<div class="empty-state"><strong>' + escapeHTML(emptyTitle || "No records found") + '</strong>' + escapeHTML(emptyText || "There are no records to display.") + '</div>'; return; }
-  // Personnel-oriented lists should identify the person by name wherever the API returns it.
-  const nameAliases = ["full name", "name", "personnel name", "fullname", "personnelname"];
-  const rowKeys = Object.keys(rows[0] || {});
-  const nameKey = rowKeys.find(function(k) { return nameAliases.indexOf(String(k).replace(/[_-]/g, " ").replace(/\s+/g, " ").trim().toLowerCase()) >= 0 && rows.some(function(r) { return String(r[k] || "").trim(); }); });
-  const hasNameColumn = (columns || []).some(function(c) { return nameAliases.indexOf(String(c.key || "").replace(/[_-]/g, " ").replace(/\s+/g, " ").trim().toLowerCase()) >= 0; });
-  const displayColumns = (columns || []).slice();
-  if (nameKey && !hasNameColumn) displayColumns.splice(Math.min(1, displayColumns.length), 0, {key:nameKey, label:"Personnel name"});
-  let html = '<div class="table-wrap"><table><thead><tr>' + displayColumns.map(function(c) { return '<th>' + escapeHTML(c.label) + '</th>'; }).join("") + '</tr></thead><tbody>';
-  html += rows.map(function(row) { return '<tr>' + displayColumns.map(function(c) { let value = typeof c.render === "function" ? c.render(row[c.key], row) : escapeHTML(row[c.key] == null || row[c.key] === "" ? "—" : row[c.key]); return '<td>' + value + '</td>'; }).join("") + '</tr>'; }).join("");
+  let html = '<div class="table-wrap"><table><thead><tr>' + columns.map(function(c) { return '<th>' + escapeHTML(c.label) + '</th>'; }).join("") + '</tr></thead><tbody>';
+  html += rows.map(function(row) { return '<tr>' + columns.map(function(c) { let value = typeof c.render === "function" ? c.render(row[c.key], row) : escapeHTML(row[c.key] == null || row[c.key] === "" ? "—" : row[c.key]); return '<td>' + value + '</td>'; }).join("") + '</tr>'; }).join("");
   target.innerHTML = html + '</tbody></table></div>';
 }
 function initAdminShell() {
@@ -2050,7 +2044,7 @@ function navigateAdmin(page, params) { hideLoader(); openPage(page, params || {}
 let importPreview=null;window.onload=function(){requireAnyRole(["DATA ENTRY","ADMIN"],function(){initAdminShell();});};
 function previewImport(){const file=document.getElementById("file").files[0];if(!file){notify("Select a posting file first.","error");return;}if(file.size>10*1024*1024){notify("The selected file exceeds the 10 MB limit.","error");return;}const ext=file.name.split(".").pop().toLowerCase();if(["csv","xlsx","xls"].indexOf(ext)<0){notify("Use a CSV or Excel file.","error");return;}if(typeof XLSX==="undefined"){notify("The spreadsheet parser could not load. Refresh and try again.","error");return;}showLoader("Reading and validating posting file…");const reader=new FileReader();reader.onerror=function(){hideLoader();notify("The selected file could not be read.","error");};reader.onload=function(e){try{const workbook=XLSX.read(e.target.result,{type:"array",cellDates:true});const first=workbook.SheetNames[0];if(!first)throw new Error("The workbook contains no worksheets.");const rows=XLSX.utils.sheet_to_json(workbook.Sheets[first],{header:1,defval:"",raw:false});google.script.run.withFailureHandler(adminError).withSuccessHandler(function(data){hideLoader();if(!data||data.status!=="SUCCESS"){importPreview=null;document.getElementById("importButton").disabled=true;notify(data&&data.message||"Validation failed.","error");return;}importPreview=data;renderImportPreview(data,file.name);}).previewMasterImport(rows,getUserSession());}catch(err){hideLoader();notify(err.message||"Unable to parse this file.","error");}};reader.readAsArrayBuffer(file);}
 function renderImportPreview(data,fileName){const preview=document.getElementById("preview");document.getElementById("importButton").disabled=!(data.readyRows&&data.readyRows.length);let html='<p class="small muted">File: '+escapeHTML(fileName)+'</p><div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr))"><div class="kpi-card"><div class="kpi-label">Rows detected</div><div class="kpi-value">'+formatCount(data.totalRows)+'</div></div><div class="kpi-card"><div class="kpi-label">Ready to import</div><div class="kpi-value">'+formatCount(data.readyCount)+'</div></div><div class="kpi-card"><div class="kpi-label">Rows needing attention</div><div class="kpi-value">'+formatCount(data.issueCount)+'</div></div></div>';
-if(data.preview&&data.preview.length){const previewRows=(data.preview||[]).map(function(r){const fullName=[r["Other Names"],r["Last Name"]].map(function(v){return String(v||"").trim();}).filter(Boolean).join(" ");return Object.assign({},r,{"Personnel Name":fullName});});const cols=[{key:"NSS Number",label:"NSS number"},{key:"Personnel Name",label:"Personnel name"}].concat(data.headers.filter(function(h){return ["Institution","Batch","Allowance Type"].indexOf(h)>=0;}).map(function(h){return {key:h,label:h};}));html+='<h3>Preview of valid rows</h3><div id="importPreviewTable"></div>';preview.innerHTML=html;renderSafeTable("importPreviewTable",cols,previewRows,"No valid rows","Review the issues below.");}else preview.innerHTML=html+'<div class="empty-state">No valid rows are ready for import.</div>';
+if(data.preview&&data.preview.length){const cols=data.headers.filter(function(h){return ["NSS Number","Other Names","Last Name","Institution","Batch","Allowance Type"].indexOf(h)>=0;}).map(function(h){return {key:h,label:h};});html+='<h3>Preview of valid rows</h3><div id="importPreviewTable"></div>';preview.innerHTML=html;renderSafeTable("importPreviewTable",cols,data.preview,"No valid rows","Review the issues below.");}else preview.innerHTML=html+'<div class="empty-state">No valid rows are ready for import.</div>';
 if(data.issues&&data.issues.length){html='<h3 style="margin-top:20px">Validation issues</h3><div id="importIssues"></div>';preview.insertAdjacentHTML("beforeend",html);renderSafeTable("importIssues",[{key:"row",label:"Row"},{key:"nss",label:"NSS number"},{key:"reason",label:"Issue"}],data.issues,"No issues","All rows passed validation.");}
 document.getElementById("result").innerHTML='<p class="muted small">Validation complete. '+formatCount(data.readyCount)+' records can be imported; '+formatCount(data.issueCount)+' rows were skipped.</p>';}
 function confirmImport(){if(!importPreview||!importPreview.readyRows||!importPreview.readyRows.length){notify("No valid rows are ready to import.","error");return;}if(!confirm("Import "+importPreview.readyCount+" valid personnel records? Duplicate and invalid rows will not be imported."))return;showLoader("Importing personnel records…");document.getElementById("importButton").disabled=true;google.script.run.withFailureHandler(function(err){hideLoader();document.getElementById("importButton").disabled=false;adminError(err);}).withSuccessHandler(function(res){hideLoader();document.getElementById("result").innerHTML='<div class="empty-state"><strong>'+escapeHTML(res.message||"Import finished")+'</strong>Imported: '+formatCount(res.imported||0)+' · Skipped: '+formatCount(res.skipped||0)+'</div>';notify(res.message,res.status==="SUCCESS"?"success":"error");if(res.status==="SUCCESS"){importPreview=null;document.getElementById("file").value="";document.getElementById("importButton").disabled=true;}}).importMasterPersonnel(importPreview.readyRows,getUserSession());}

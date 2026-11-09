@@ -1,58 +1,44 @@
-# NSA WAWM Personnel Management System
+# NSA WAWM Personnel Management System – Integrated Upgrade
 
-This archive contains the NSA WAWM static frontend, shared assets, and the Google Apps Script backend source.
+## Package contents
+- `Code.gs`: updated Apps Script backend (authoritative replacement for the current backend file).
+- Existing GitHub Pages HTML files and shared assets from the supplied `DRS.zip`.
+- `admin.html`: operational dashboard with day/month/year registration trends, monthly and annual evaluation reporting, selected-period compliance and named recent activity lists.
+- `success.html`: thermal receipt print styling for 80 mm printers, retaining the on-screen success page.
+- `communications.html`: campaign processing now recognises quota-paused campaigns and permits resumption.
+- `worker.js`: updated Cloudflare Worker source based on the supplied Worker, with JSON content-type enforcement and a 8 MB request-body limit.
 
-The frontend uses the HTTPS Cloudflare Worker endpoint configured in `assets/config.js`. Do not place API credentials or secrets in that public file.
+## Apps Script deployment
+1. Back up the current Apps Script project and linked spreadsheet.
+2. Replace the existing backend source with `Code.gs` (retain any project files not included in the source archive).
+3. Save and run a non-destructive administrative test first, such as loading the admin dashboard and previewing a communication campaign.
+4. Deploy a new version of the Apps Script web app if the project uses a versioned deployment. Keep the same deployment access model and URL unless you intentionally change it.
 
-## Updated in this package
+## GitHub Pages deployment
+1. Upload the updated HTML files and `assets/` directory, preserving their relative paths.
+2. Keep the public API URL in `assets/config.js` unchanged unless the Worker URL changes.
+3. Confirm the favicon loads on each active page and the success receipt prints correctly.
 
-### Administration dashboard
-- Daily registration trend for the last 30 days.
-- Monthly registration trend for the last 12 months.
-- Yearly registration trend for the last five years.
-- Historical monthly evaluation submissions and pending counts for the last 12 periods, using the system's existing eligibility rules.
-- Selected-month compliance with eligible, submitted, pending and compliance-rate figures.
-- Current annual compliance with eligible, submitted, pending and compliance-rate figures.
-- Annual evaluation submission trend by service-year period.
-- Recent registration, monthly evaluation and annual evaluation lists include personnel names, NSS numbers and relevant dates/periods.
-- Dashboard filters let an administrator choose daily/monthly/yearly trend granularity and the month/year used for monthly compliance.
+## Cloudflare Worker deployment
+1. Replace the Worker source with `worker.js`.
+2. Preserve the existing environment variables/secrets:
+   - `ALLOWED_ORIGINS` (for example `https://nsawawm.github.io`)
+   - `APPS_SCRIPT_EXEC_URL` (the deployed Apps Script `/exec` URL)
+   - `GATEWAY_SHARED_SECRET` (Cloudflare secret; never place in GitHub Pages)
+3. Deploy the Worker and test login, registration OTP, admin dashboard, communication campaign preview, and campaign processing.
+4. The Worker continues to use the existing explicit action/method allowlists. Add a backend method to the allowlist only after confirming its authentication and input validation.
 
-### Communications and email
-- Official NSA email wrapper with the configured logo, institution name, system name and reply-to address.
-- Plain-text and HTML email bodies are handled separately, with unsafe embedded content stripped from HTML messages.
-- Email sends check the remaining Apps Script daily recipient quota.
-- Campaign batches pause without marking remaining messages as failed when the daily email quota is exhausted. The campaign remains resumable from Campaign History.
-- SMS messages are no longer silently truncated to 160 characters. The preview still flags messages above 160 characters as an informational warning because the SMS provider may segment them and apply additional charges.
-
-### Registration receipt
-- Print layout is configured for an 80 mm thermal receipt roll.
-- The printed receipt includes the NSA logo, registration number, personnel identity, NSS number, allowance category, secretariat and print timestamp.
-- Select an 80 mm receipt-roll paper size in the browser print dialog where the printer driver provides that option.
-
-### Browser tab branding and personnel lists
-- Added the NSA logo as the favicon to the active HTML pages that did not already have one.
-- Shared administrative table rendering automatically adds a personnel-name column when the returned records contain a recognised name field.
-- Master-import preview now displays a combined personnel name.
-
-## Deployment sequence
-
-1. Back up the current GitHub Pages files and Apps Script project before replacing anything.
-2. Deploy the updated `Code.gs` source to the Apps Script backend that the API gateway invokes. The same updated source is also retained as `Code.gs.txt`.
-3. Deploy the updated root HTML files and the `assets/` directory to the existing GitHub Pages site. Keep the existing `assets/config.js` API URL unless the gateway endpoint has changed.
-4. Confirm that the Cloudflare Worker forwards the `getAdminDashboardAnalytics` method and its optional second `filters` argument to the backend. The Worker source was not included in the supplied archive, so its internal routing and allow-list could not be inspected here.
-5. Re-authorise the Apps Script mail scope if Google requests it. Check the configured email sender name, reply-to address and logo URL under System Settings.
-6. Test registration, receipt retrieval, monthly and annual evaluation submission, administrator login, dashboard filters, email campaign preview, a one-recipient email test and an SMS longer than 160 characters before operational rollout.
-
-## Dashboard metric definitions and limitations
-
-- Historical monthly pending totals use the same active, subvented-personnel and service-date eligibility checks as the existing monthly compliance function.
-- The selected-month compliance figures use the existing `getMonthlyCompliance(month, year, {})` calculation.
-- Current annual compliance uses the current `Service Year` stored for each registered person, consistent with the existing annual compliance function.
-- The annual historical chart reports submitted annual evaluations by recorded service-year period. It does not invent historical eligible denominators where the personnel register does not preserve historical rosters.
-- Email quota availability is read dynamically from `MailApp.getRemainingDailyQuota()`. Google account type and Apps Script quota policy determine the actual allowance.
+## Email quota behaviour
+- Emails are sent individually to each recipient. This gives per-recipient logging and avoids recipient-list bulk sends.
+- Individual sends do **not** bypass Google's daily recipient quota. Google counts recipients regardless of whether a message is sent alone or in a group.
+- Communication campaigns are processed in small batches. If Apps Script reports no remaining daily email quota, the campaign changes to `PAUSED_QUOTA`; undelivered recipients remain `PENDING` and successful recipients remain `SENT`.
+- After Google's quota becomes available again, use the campaign history's **Resume** action. It resumes pending rows without resending successful rows.
+- Direct OTP, registration-confirmation and reminder emails remain subject to Google's quota. OTP emails are not silently queued because their codes expire. For guaranteed delivery beyond Google's quota, configure a separate transactional email provider.
 
 ## Validation performed
+- Apps Script backend JavaScript syntax check.
+- Cloudflare Worker JavaScript syntax check.
+- Inline JavaScript syntax checks for HTML pages where scripts could be extracted safely.
+- HTML parser smoke checks.
 
-- JavaScript syntax checks passed for the updated Apps Script backend.
-- Inline JavaScript syntax checks passed for all HTML pages in the archive after correcting an orphaned code fragment in `annual-evaluation-leave.html`.
-- Static inspection only. Live workflows could not be exercised because the supplied archive does not contain the production Cloudflare Worker source, connected Google Sheet data, or deployment credentials.
+Live Google Sheets, Gmail, Apps Script deployment and Cloudflare requests have not been executed from this packaging environment. Complete the deployment smoke tests above before using this release operationally.

@@ -1,6 +1,8 @@
 <!doctype html>
 <html lang="en">
 <head>
+<link rel="icon" type="image/png" href="./assets/my_logo.png">
+
 <script src="./assets/config.js"></script>
 <script src="./assets/apps-script-bridge.js"></script>
 
@@ -8,7 +10,6 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light">
 <title>Personnel Communications | NSA WAWM</title>
-  <link rel="icon" type="image/png" href="./assets/my_logo.png">
 
 <style>
 /* =========================================================
@@ -1957,15 +1958,8 @@ function statusBadge(value) {
 function renderSafeTable(targetId, columns, rows, emptyTitle, emptyText) {
   const target = document.getElementById(targetId); if (!target) return;
   if (!Array.isArray(rows) || !rows.length) { target.innerHTML = '<div class="empty-state"><strong>' + escapeHTML(emptyTitle || "No records found") + '</strong>' + escapeHTML(emptyText || "There are no records to display.") + '</div>'; return; }
-  // Personnel-oriented lists should identify the person by name wherever the API returns it.
-  const nameAliases = ["full name", "name", "personnel name", "fullname", "personnelname"];
-  const rowKeys = Object.keys(rows[0] || {});
-  const nameKey = rowKeys.find(function(k) { return nameAliases.indexOf(String(k).replace(/[_-]/g, " ").replace(/\s+/g, " ").trim().toLowerCase()) >= 0 && rows.some(function(r) { return String(r[k] || "").trim(); }); });
-  const hasNameColumn = (columns || []).some(function(c) { return nameAliases.indexOf(String(c.key || "").replace(/[_-]/g, " ").replace(/\s+/g, " ").trim().toLowerCase()) >= 0; });
-  const displayColumns = (columns || []).slice();
-  if (nameKey && !hasNameColumn) displayColumns.splice(Math.min(1, displayColumns.length), 0, {key:nameKey, label:"Personnel name"});
-  let html = '<div class="table-wrap"><table><thead><tr>' + displayColumns.map(function(c) { return '<th>' + escapeHTML(c.label) + '</th>'; }).join("") + '</tr></thead><tbody>';
-  html += rows.map(function(row) { return '<tr>' + displayColumns.map(function(c) { let value = typeof c.render === "function" ? c.render(row[c.key], row) : escapeHTML(row[c.key] == null || row[c.key] === "" ? "—" : row[c.key]); return '<td>' + value + '</td>'; }).join("") + '</tr>'; }).join("");
+  let html = '<div class="table-wrap"><table><thead><tr>' + columns.map(function(c) { return '<th>' + escapeHTML(c.label) + '</th>'; }).join("") + '</tr></thead><tbody>';
+  html += rows.map(function(row) { return '<tr>' + columns.map(function(c) { let value = typeof c.render === "function" ? c.render(row[c.key], row) : escapeHTML(row[c.key] == null || row[c.key] === "" ? "—" : row[c.key]); return '<td>' + value + '</td>'; }).join("") + '</tr>'; }).join("");
   target.innerHTML = html + '</tbody></table></div>';
 }
 function initAdminShell() {
@@ -2254,10 +2248,10 @@ function renderCampaignPreview(res) {
   document.getElementById("previewSection").style.display = "block";
   document.getElementById("previewCampaignId").textContent = res.campaignId;
   const c = res.counts || {};
-  const cards = [["Eligible personnel",c.eligible], ["Email contacts missing",c.missingEmail], ["Phone contacts missing",c.missingPhone], ["SMS over 160 characters (info)",res.overLimitSmsCount], ["Daily email quota remaining",res.emailQuotaRemaining == null ? "Unavailable" : res.emailQuotaRemaining]];
+  const cards = [["Eligible personnel",c.eligible], ["Email contacts missing",c.missingEmail], ["Phone contacts missing",c.missingPhone], ["SMS longer than 160 chars (info)",res.overLimitSmsCount]];
   document.getElementById("previewSummary").innerHTML = cards.map(function(x) { return '<article class="kpi-card"><div class="kpi-label">' + escapeHTML(x[0]) + '</div><div class="kpi-value">' + formatCount(x[1]) + '</div></article>'; }).join("");
   let warning = renderReviewCounts(c);
-  if (res.overLimitSmsCount > 0) warning += '<div class="notice notice-warning" style="margin-top:10px;">' + formatCount(res.overLimitSmsCount) + ' personalised SMS message(s) exceed 160 characters. This is informational only. The system preserves the complete message; your SMS provider may split long messages into multiple billable segments.</div>';
+  if (res.overLimitSmsCount > 0) warning += '<div class="notice notice-warning" style="margin-top:10px;">' + formatCount(res.overLimitSmsCount) + ' personalised SMS message(s) exceed 160 characters. This is informational only; sending is allowed. Your SMS provider may split long messages into multiple billable segments.</div>';
   if (c.missingValidationDate > 0 || c.validationAfterCutoff > 0) warning += '<p class="field-help">Personnel without a recorded regional validation date or validated after the cutoff were excluded from the eligible list.</p>';
   document.getElementById("previewWarnings").innerHTML = warning;
   document.getElementById("previewRecipients").innerHTML = (res.recipients || []).map(function(p) {
@@ -2300,14 +2294,8 @@ function processNextCampaignBatch(id) {
   google.script.run.withFailureHandler(function(e) { campaignBusy = false; hideLoader(); adminError(e); loadCampaignHistory(); }).withSuccessHandler(function(res) {
     if (!res) { campaignBusy = false; hideLoader(); notify("No campaign batch response was received.", "error"); return; }
     if (res.status === "BUSY") { window.setTimeout(function() { processNextCampaignBatch(id); }, 900); return; }
+    if (res.status === "PAUSED_QUOTA") { campaignBusy = false; hideLoader(); notify(res.message || "Daily email quota exhausted. Remaining messages are saved and can be resumed later.", "warning"); loadCampaignHistory(); return; }
     if (res.status !== "SUCCESS") { campaignBusy = false; hideLoader(); notify(res.message || "Campaign processing failed.", "error"); loadCampaignHistory(); return; }
-    if (res.quotaPaused) {
-      campaignBusy = false; hideLoader();
-      const message = "Campaign paused because the Google Apps Script daily email quota has been reached. " + formatCount(res.pending) + " message(s) remain pending. Resume the campaign after the quota resets.";
-      notify(message, "error");
-      document.getElementById("previewStatus").innerHTML = '<div class="notice notice-warning">' + escapeHTML(message) + '</div>';
-      loadCampaignHistory(); return;
-    }
     if (res.done) {
       campaignBusy = false; hideLoader();
       const message = "Campaign finished. Accepted: " + res.sent + "; failed: " + res.failed + "; missing contact: " + res.noContact + "; over-limit: " + res.overLimit + ".";
@@ -2336,7 +2324,7 @@ function renderCampaignHistory(rows) {
   const target = document.getElementById("campaignHistory");
   if (!rows || !rows.length) { target.innerHTML = '<div class="empty-state"><strong>No campaigns yet</strong><p>Preview a campaign to create the first campaign record. Previewing alone does not send messages.</p></div>'; return; }
   target.innerHTML = '<div class="table-wrap"><table><thead><tr><th>Campaign</th><th>Created</th><th>Status</th><th>Recipients</th><th>Accepted</th><th>Failed</th><th>Pending</th><th>Issues</th><th>Actions</th></tr></thead><tbody>' + rows.map(function(r) {
-    const canResume = String(r.status).toUpperCase() === "SENDING";
+    const canResume = ["SENDING", "PAUSED_QUOTA"].indexOf(String(r.status).toUpperCase()) >= 0;
     const canRetry = String(r.status).toUpperCase() === "COMPLETED_WITH_ISSUES" && Number(r.failed) > 0;
     const action = canResume ? '<button type="button" class="secondary" onclick="beginCampaignSend(\'' + escapeHTML(r.id) + '\')">Resume</button>' : canRetry ? '<button type="button" class="secondary" onclick="retryCampaign(\'' + escapeHTML(r.id) + '\')">Retry failed</button>' : '—';
     return '<tr><td><strong>' + escapeHTML(r.name) + '</strong><div class="field-help">' + escapeHTML(r.id) + '</div></td><td>' + escapeHTML(formatAdminDate(r.createdAt)) + '</td><td>' + statusBadge(r.status) + '</td><td>' + formatCount(r.recipients) + '</td><td>' + formatCount(r.sent) + '</td><td>' + formatCount(r.failed) + '</td><td>' + formatCount(r.pending) + '</td><td>' + formatCount(Number(r.noContact) + Number(r.overLimit)) + '</td><td>' + action + '</td></tr>';

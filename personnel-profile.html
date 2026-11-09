@@ -1,6 +1,8 @@
 <!doctype html>
 <html lang="en">
 <head>
+<link rel="icon" type="image/png" href="./assets/my_logo.png">
+
 <script src="./assets/config.js"></script>
 <script src="./assets/apps-script-bridge.js"></script>
 
@@ -8,7 +10,6 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light">
 <title>Personnel Profile | NSA WAWM</title>
-  <link rel="icon" type="image/png" href="./assets/my_logo.png">
 
 <style>
 /* =========================================================
@@ -1957,15 +1958,8 @@ function statusBadge(value) {
 function renderSafeTable(targetId, columns, rows, emptyTitle, emptyText) {
   const target = document.getElementById(targetId); if (!target) return;
   if (!Array.isArray(rows) || !rows.length) { target.innerHTML = '<div class="empty-state"><strong>' + escapeHTML(emptyTitle || "No records found") + '</strong>' + escapeHTML(emptyText || "There are no records to display.") + '</div>'; return; }
-  // Personnel-oriented lists should identify the person by name wherever the API returns it.
-  const nameAliases = ["full name", "name", "personnel name", "fullname", "personnelname"];
-  const rowKeys = Object.keys(rows[0] || {});
-  const nameKey = rowKeys.find(function(k) { return nameAliases.indexOf(String(k).replace(/[_-]/g, " ").replace(/\s+/g, " ").trim().toLowerCase()) >= 0 && rows.some(function(r) { return String(r[k] || "").trim(); }); });
-  const hasNameColumn = (columns || []).some(function(c) { return nameAliases.indexOf(String(c.key || "").replace(/[_-]/g, " ").replace(/\s+/g, " ").trim().toLowerCase()) >= 0; });
-  const displayColumns = (columns || []).slice();
-  if (nameKey && !hasNameColumn) displayColumns.splice(Math.min(1, displayColumns.length), 0, {key:nameKey, label:"Personnel name"});
-  let html = '<div class="table-wrap"><table><thead><tr>' + displayColumns.map(function(c) { return '<th>' + escapeHTML(c.label) + '</th>'; }).join("") + '</tr></thead><tbody>';
-  html += rows.map(function(row) { return '<tr>' + displayColumns.map(function(c) { let value = typeof c.render === "function" ? c.render(row[c.key], row) : escapeHTML(row[c.key] == null || row[c.key] === "" ? "—" : row[c.key]); return '<td>' + value + '</td>'; }).join("") + '</tr>'; }).join("");
+  let html = '<div class="table-wrap"><table><thead><tr>' + columns.map(function(c) { return '<th>' + escapeHTML(c.label) + '</th>'; }).join("") + '</tr></thead><tbody>';
+  html += rows.map(function(row) { return '<tr>' + columns.map(function(c) { let value = typeof c.render === "function" ? c.render(row[c.key], row) : escapeHTML(row[c.key] == null || row[c.key] === "" ? "—" : row[c.key]); return '<td>' + value + '</td>'; }).join("") + '</tr>'; }).join("");
   target.innerHTML = html + '</tbody></table></div>';
 }
 function initAdminShell() {

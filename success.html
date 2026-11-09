@@ -75,6 +75,27 @@
       .footer-row{display:block}.footer-right{margin-top:4px;text-align:left}.portal-footer{padding:11px 0 10px;font-size:9px}
     }
     @media(max-width:390px){body{padding:0 6px}.brand-title{font-size:14px}.brand-subtitle{font-size:8px}.header-actions{padding-top:17px}.header-button{padding:0 7px;font-size:6.5px}.receipt-number{display:grid;grid-template-columns:minmax(0,1fr)}.copy-button{justify-self:start}.details-grid{grid-template-columns:minmax(0,1fr)}}
+    @media print {
+      @page { size: 80mm auto; margin: 3mm; }
+      html, body { width: 80mm !important; margin: 0 !important; padding: 0 !important; background: #fff !important; }
+      .portal { width: 74mm !important; max-width: 74mm !important; margin: 0 auto !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; }
+      .portal-header { min-height: 0 !important; padding: 5mm 2mm !important; background: #fff !important; color: #111 !important; border-bottom: 1px dashed #555 !important; }
+      .brand-logo { width: 16mm !important; height: 16mm !important; flex-basis: 16mm !important; box-shadow: none !important; }
+      .brand-logo img { width: 100% !important; height: 100% !important; object-fit: contain !important; }
+      .brand-title { font-size: 13pt !important; color: #111 !important; }
+      .brand-subtitle, .brand-kicker { color: #222 !important; }
+      .content { padding: 3mm 1mm !important; }
+      .success-panel { padding: 2mm 0 !important; border: 0 !important; }
+      .success-mark, .intro, .privacy-note, .actions, .header-actions, .progress-strip, .portal-footer, .message { display: none !important; }
+      .receipt { width: 100% !important; max-width: none !important; margin: 2mm 0 !important; padding: 3mm !important; border: 1px dashed #555 !important; border-radius: 0 !important; background: #fff !important; }
+      .receipt-number, .detail-card { border: 0 !important; border-bottom: 1px dotted #aaa !important; border-radius: 0 !important; padding: 2mm 0 !important; background: #fff !important; }
+      .receipt-number-value { color: #000 !important; font-size: 15pt !important; }
+      .details-grid { display: block !important; }
+      .detail-card span, .detail-card strong { color: #111 !important; font-size: 9pt !important; }
+      .copy-button { display: none !important; }
+      * { color-adjust: exact; -webkit-print-color-adjust: exact; }
+    }
+    
     @media print{
       body{display:block;padding:0;background:#fff;color:#111}
       .portal{width:100%;margin:0;box-shadow:none;border:1px solid #ddd}
@@ -85,43 +106,31 @@
       .receipt-number-value{color:#111}.intro,.privacy-note,.receipt-note{color:#333}
     }
     @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition:none!important}}
-  
-    .receipt-print-meta{display:none;margin:12px 0 0;padding-top:8px;border-top:1px dashed var(--line);font-size:10px;color:var(--muted)}
-    @media print{
-      @page{size:80mm auto;margin:3mm}
-      html,body{width:74mm;min-width:74mm;min-height:0;margin:0!important;padding:0!important;background:#fff!important;color:#111!important}
-      body{display:block;font-family:Arial,Helvetica,sans-serif;font-size:10px}
-      .portal{width:74mm;max-width:74mm;margin:0!important;padding:0!important;overflow:visible;border:0!important;border-radius:0!important;box-shadow:none!important;background:#fff!important}
-      .portal-header{display:flex!important;align-items:center!important;gap:8px!important;min-height:0!important;padding:8px 5px 9px!important;background:#fff!important;color:#111!important;border-bottom:1.5px solid #006b3f!important}
-      .brand-logo{display:block!important;flex:0 0 38px!important;width:38px!important;height:38px!important}
-      .brand-logo img{display:block!important;width:38px!important;height:38px!important;object-fit:contain!important}
-      .brand-copy{min-width:0!important}
-      .brand-kicker{margin:0 0 2px!important;color:#006b3f!important;font-size:7px!important;letter-spacing:.7px!important}
-      .brand-title{margin:0!important;color:#111!important;font-size:12px!important;line-height:1.2!important}
-      .brand-subtitle{margin:2px 0 0!important;color:#444!important;font-size:7px!important;line-height:1.3!important}
-      .header-actions,.progress-strip,.success-mark,.actions,.portal-footer,.message,.privacy-note,.copy-button{display:none!important}
-      .content{display:block!important;padding:8px 4px!important}
-      .success-panel{margin:0!important;padding:0!important;border:0!important;background:#fff!important;text-align:left!important}
-      .eyebrow{margin:7px 0 3px!important;color:#006b3f!important;font-size:7px!important;letter-spacing:1px!important}
-      #successTitle{margin:0!important;color:#111!important;font-size:13px!important;line-height:1.3!important}
-      .intro{margin:5px 0 10px!important;color:#333!important;font-size:8px!important;line-height:1.45!important}
-      .receipt{width:100%!important;max-width:none!important;margin:8px 0 0!important;padding:8px 7px!important;border:1px dashed #888!important;border-radius:0!important;background:#fff!important;text-align:left!important;break-inside:avoid;page-break-inside:avoid}
-      .receipt-heading{margin:0 0 8px!important;padding:0 0 6px!important;border-bottom:1px dashed #777!important}
-      .receipt-heading h3{font-size:10px!important;color:#111!important}
-      .receipt-badge{padding:3px 5px!important;border:1px solid #006b3f!important;border-radius:2px!important;background:#fff!important;color:#006b3f!important;font-size:7px!important}
-      .receipt-number{display:block!important;margin:0 0 8px!important;padding:7px!important;border:1px solid #777!important;border-radius:2px!important;background:#fff!important}
-      .receipt-number-label{font-size:7px!important;color:#333!important}
-      .receipt-number-value{font-size:14px!important;color:#111!important;letter-spacing:.2px!important}
-      .details-grid{display:block!important;margin:0!important}
-      .detail-card{display:block!important;margin:0!important;padding:5px 2px!important;border:0!important;border-bottom:1px dotted #bbb!important;border-radius:0!important;background:#fff!important}
-      .detail-card span{display:block!important;margin-bottom:2px!important;color:#555!important;font-size:7px!important}
-      .detail-card strong{display:block!important;color:#111!important;font-size:9px!important;line-height:1.35!important;overflow-wrap:anywhere}
-      .receipt-note{margin:8px 0 0!important;color:#333!important;font-size:7px!important;line-height:1.4!important}
-      .receipt-print-meta{display:block!important;color:#333!important;font-size:7px!important}
-      *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
-    }
-
   </style>
+
+<style id="nsa-thermal-receipt-print">
+/* NSA THERMAL RECEIPT OVERRIDES */
+@media print {
+  @page { size: 80mm auto; margin: 3mm; }
+  html, body { width: 80mm !important; margin: 0 !important; padding: 0 !important; background: #fff !important; }
+  .portal { width: 74mm !important; max-width: 74mm !important; margin: 0 auto !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; }
+  .portal-header { min-height: 0 !important; padding: 4mm 2mm !important; background: #fff !important; color: #111 !important; border-bottom: 1px dashed #555 !important; }
+  .brand-logo { width: 15mm !important; height: 15mm !important; flex-basis: 15mm !important; box-shadow: none !important; }
+  .brand-logo img { width: 100% !important; height: 100% !important; object-fit: contain !important; }
+  .brand-title { font-size: 12pt !important; color: #111 !important; }
+  .brand-subtitle, .brand-kicker { color: #222 !important; }
+  .content { padding: 3mm 1mm !important; }
+  .success-panel { padding: 2mm 0 !important; border: 0 !important; }
+  .success-mark, .intro, .privacy-note, .actions, .header-actions, .progress-strip, .portal-footer, .message { display: none !important; }
+  .receipt { width: 100% !important; max-width: none !important; margin: 2mm 0 !important; padding: 3mm !important; border: 1px dashed #555 !important; border-radius: 0 !important; background: #fff !important; }
+  .receipt-number, .detail-card { border: 0 !important; border-bottom: 1px dotted #aaa !important; border-radius: 0 !important; padding: 2mm 0 !important; background: #fff !important; }
+  .receipt-number-value { color: #000 !important; font-size: 14pt !important; }
+  .details-grid { display: block !important; }
+  .detail-card span, .detail-card strong { color: #111 !important; font-size: 9pt !important; }
+  .copy-button { display: none !important; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+</style>
 </head>
 <body>
   <main class="portal">
@@ -174,7 +183,6 @@
           </div>
 
           <p class="receipt-note">Keep this receipt and your registration number. Contact the Municipal Secretariat if the details shown here do not match your records.</p>
-          <p class="receipt-print-meta">Printed: <span id="receiptPrintDate">To be recorded at printing</span></p>
         </section>
 
         <p class="message" id="pageMessage" role="status" aria-live="polite"></p>
@@ -365,8 +373,7 @@
     }
 
     $("copyButton").addEventListener("click", copyRegistrationNumber);
-    $("printButton").addEventListener("click", () => { $("receiptPrintDate").textContent = new Date().toLocaleString(); window.print(); });
-    window.addEventListener("beforeprint", () => { if ($("receiptPrintDate")) $("receiptPrintDate").textContent = new Date().toLocaleString(); });
+    $("printButton").addEventListener("click", () => window.print());
     $("downloadButton").addEventListener("click", downloadReceipt);
     $("homeButton").addEventListener("click", goHome);
     $("homeActionButton").addEventListener("click", goHome);
