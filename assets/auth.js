@@ -5,7 +5,8 @@
     "SUPER ADMIN": ["SUPER ADMIN"],
     "NSA OFFICER": ["NSA OFFICER", "ADMIN", "SUPER ADMIN"],
     "EVALUATION OFFICER": ["EVALUATION OFFICER", "ADMIN", "SUPER ADMIN"],
-    "DATA ENTRY": ["DATA ENTRY", "ADMIN", "SUPER ADMIN"]
+    "DATA ENTRY": ["DATA ENTRY", "ADMIN", "SUPER ADMIN"],
+    "AGENCY SECRETARIAT": ["AGENCY SECRETARIAT"]
   };
 
   window.requireLogin = function (requiredRole, callback, deniedCallback) {
@@ -59,6 +60,7 @@
     const normal = String(role || "").trim().toUpperCase();
     const page = normal === "SUPER ADMIN" || normal === "ADMIN"
       ? "admin"
+      : normal === "AGENCY SECRETARIAT" ? "agency-management"
       : normal === "DATA ENTRY" ? "master-import" : "home";
     window.openPage(page);
   };

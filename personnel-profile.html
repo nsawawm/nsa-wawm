@@ -2115,7 +2115,30 @@ function renderProfile(p) {
   const posting = section("Posting details", infoCard("Company / institution posted to", p["Company Posted To"] || p["Place of Posting"]) + infoCard("District posted to", p["District Posted To"] || p["District"]) + infoCard("Region posted to", p["Region Posted To"] || p["Region"]));
   const residence = section("Residential information", infoCard("Residential address", p["Residential Address"]) + infoCard("Residential region", p["Residential Region"]) + infoCard("Residential district", p["Residential District"]));
   const kin = section("Employment and next of kin", infoCard("Currently employed", p["Currently Employed"]) + infoCard("Employer", p["Employer Company"] || p["Employer Name"]) + infoCard("Next of kin", p["Next Of Kin Name"]) + infoCard("Relationship", p["Next Of Kin Relation"]) + infoCard("Next of kin phone", p["Next Of Kin Phone"]));
-  document.getElementById("profile").innerHTML = hero + registration + posting + personal + residence + kin;
+  const agency = p["_Agency Information"] || null;
+  const supervisor = p["_Assigned Supervisor"] || null;
+  let agencySection = "";
+  if (agency) {
+    const head = agency.head || {};
+    const contactLink = function(label,value,kind) {
+      if (!value) return infoCard(label,"—");
+      const href = kind==="email" ? "mailto:"+value : kind==="whatsapp" ? "https://wa.me/"+String(value).replace(/[^0-9]/g,"") : "tel:"+String(value).replace(/[^0-9+]/g,"");
+      return '<div class="info-card"><span>'+escapeHTML(label)+'</span><strong><a href="'+escapeHTML(href)+'">'+escapeHTML(value)+'</a></strong></div>';
+    };
+    const imageUrls = String(agency.images||"").split(/\r?\n/).map(function(u){return u.trim();}).filter(function(u){return /^https?:\/\//i.test(u);});
+    agencySection = section("User agency information",
+      infoCard("Agency",agency.name)+infoCard("Other personnel posted here",agency.postedCount)+infoCard("Region / district",(agency.region||"—")+" / "+(agency.district||"—"))+
+      infoCard("Address",agency.address)+infoCard("GPS address",agency.gps)+
+      infoCard("Motivation / staff support",agency.motivation)+infoCard("Accommodation",agency.accommodation)+
+      infoCard("Feeding",agency.feeding)+infoCard("Extra allowance",agency.extraAllowance)+
+      infoCard("Amenities",agency.amenities)+infoCard("Other benefits",agency.otherBenefits)+
+      contactLink("Agency head phone",head.phone,"phone")+contactLink("Agency head WhatsApp",head.whatsapp,"whatsapp")+
+      contactLink("Agency head email",head.email,"email")+
+      (supervisor ? infoCard("Assigned supervisor",supervisor.Name+" ("+(supervisor.Designation||"")+")")+
+       contactLink("Supervisor phone",supervisor.Phone,"phone")+contactLink("Supervisor WhatsApp",supervisor.WhatsApp,"whatsapp")+contactLink("Supervisor email",supervisor.Email,"email") : infoCard("Assigned supervisor","Not yet assigned"))
+    ) + (imageUrls.length ? '<div class="profile-section"><h2>Agency photographs</h2><div class="profile-info-grid">'+imageUrls.map(function(u){return '<div class="info-card"><img src="'+escapeHTML(u)+'" alt="Agency photograph" style="width:100%;max-height:220px;object-fit:cover;border-radius:8px"></div>';}).join("")+'</div></div>' : "");
+  }
+  document.getElementById("profile").innerHTML = hero + registration + posting + agencySection + personal + residence + kin;
   document.getElementById("printDate").textContent = new Intl.DateTimeFormat("en-GB", {day:"2-digit",month:"long",year:"numeric"}).format(new Date());
 }
 function loadProfilePhoto(nss) {
