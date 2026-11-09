@@ -18,3 +18,7 @@
 
 ## Before production release
 This environment cannot connect to the live Google Spreadsheet, Apps Script deployment, Cloudflare account, mail provider, or SMS provider. Therefore, live data migration, permissions, outbound delivery, and deployment cannot be executed or represented as tested here. Follow the deployment checklist in README.md and run the live acceptance tests against a backup/staging copy first.
+
+
+## v1.3
+Run `setupNSA_WAWM()` after replacing Code.gs. The routine additively provisions the full agency data model and migrates legacy agency head contacts, supervisors and assignments. Test agency file import with a small CSV/XLSX file. The User Agencies and Geospatial Monitoring sidebar pages now load inside the Admin shell.

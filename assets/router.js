@@ -26,7 +26,9 @@
     "personnel-profile": "personnel-profile.html",
     "evaluation-calendar": "evaluation-calendar.html",
     "activity-log": "activity-log.html",
-    communications: "communications.html"
+    communications: "communications.html",
+    "agency-management": "agency-management.html",
+    "geospatial-monitoring": "geospatial-monitoring.html"
   };
 
   window.openPage = function (page, params) {

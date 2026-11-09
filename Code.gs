@@ -35,6 +35,8 @@ function include(filename) {
 /* ===== setupNSA_WAWM ===== */
 function setupNSA_WAWM() {
     createDatabaseStructure_();
+    ensureAgencySheets_();
+    migrateAgencyLegacyRecords_();
     createSystemFolders_();
     createDefaultAllowanceTypes_();
     createDefaultRoles_();
@@ -2592,6 +2594,9 @@ function getPersonnelProfile(nss, token) {
     requireAdminSession_(token, ["ADMIN"]);
     const person = findRegisteredPersonnel_(String(nss || "").trim());
     if (!person) return { status: "ERROR", message: "Personnel not found" };
+    const agencyInfo = getAgencyInformationForPersonnel(nss, token);
+    person["_Agency Information"] = agencyInfo && agencyInfo.agency ? agencyInfo.agency : null;
+    person["_Assigned Supervisor"] = agencyInfo && agencyInfo.supervisor ? agencyInfo.supervisor : null;
     return { status: "SUCCESS", data: serialiseAdminValue_(person) };
 }
 /* ===== uploadPersonnelPhoto ===== */
@@ -10239,7 +10244,29 @@ function nsaApiInvoke_(method, args) {
   "addSystemUser": addSystemUser,
   "getSystemUsers": getSystemUsers,
   "resetSystemUserPassword": resetSystemUserPassword,
-  "toggleUserStatus": toggleUserStatus
+  "toggleUserStatus": toggleUserStatus,
+  "syncAgenciesFromMaster": syncAgenciesFromMaster,
+  "getAgencyManagementData": getAgencyManagementData,
+  "importUserAgencies": importUserAgencies,
+  "getAgencyOperationalRegister": getAgencyOperationalRegister,
+  "saveAgencyProfile": saveAgencyProfile,
+  "activateAgencyAccount": activateAgencyAccount,
+  "getAgencyPortalData": getAgencyPortalData,
+  "saveAgencyPortalProfile": saveAgencyPortalProfile,
+  "saveAgencySupervisor": saveAgencySupervisor,
+  "assignAgencySupervisor": assignAgencySupervisor,
+  "createAgencyPersonnelRequest": createAgencyPersonnelRequest,
+  "reviewAgencyPersonnelRequest": reviewAgencyPersonnelRequest,
+  "getAgencyInformationForPersonnel": getAgencyInformationForPersonnel,
+  "sendAgencyCommunication": sendAgencyCommunication,
+  "sendAgencyInfoOTP": sendAgencyInfoOTP,
+  "confirmAgencyInfoOTP": confirmAgencyInfoOTP,
+  "getAgencyInfoWithAccess": getAgencyInfoWithAccess,
+  "getGeospatialDashboardData": getGeospatialDashboardData,
+  "saveAgencyGeolocation": saveAgencyGeolocation,
+  "saveMonitoringVisit": saveMonitoringVisit,
+  "getAgencyMonitoringHistory": getAgencyMonitoringHistory,
+  "getGeospatialFilterOptions": getGeospatialFilterOptions
   };
   if (!Object.prototype.hasOwnProperty.call(allowed, method) || typeof allowed[method] !== "function") {
     throw new Error("This API method is not available.");
@@ -10338,4 +10365,588 @@ function nsaApiPayloadArgs_(action, payload) {
     }
     default: return null;
   }
+}
+
+
+/* ============================================================
+ * USER AGENCY MANAGEMENT MODULE
+ * NSA WAWM DRS | Integrated agency registry and portal
+ * Master posting remains authoritative.
+ * ============================================================ */
+
+const AGENCY_SHEETS_ = {
+  USER_AGENCIES: ["Agency ID","Company Code","Name","Branches","Region","District","Email","Phone Number","Address","GPS","Industry","Paying Status","Company Type","Company Ownership","Category","Status","Date Registered","Head Name","Head Designation","Head Phone","Head WhatsApp","Head Email","Agency Account Email","Account Status","Motivation","Accommodation","Feeding","Extra Allowance","Amenities","Other Benefits","Images","Profile Updated","Created By","Updated By"],
+  AGENCY_SUPERVISORS: ["Supervisor ID","Agency ID","Name","Designation","Phone","WhatsApp","Email","Status","Created Date","Created By"],
+  AGENCY_ASSIGNMENTS: ["Assignment ID","NSS Number","Agency ID","Supervisor ID","Assigned Date","Assigned By","Status","Notes"],
+  AGENCY_REQUESTS: ["Request ID","Agency ID","Batch","Requested Number","Requested Date","Required By","Reason","Status","Decision Notes","Reviewed By","Reviewed Date"],
+  AGENCY_AUDIT: ["Date","Actor","Agency ID","Action","Details"],
+  AGENCY_GEOLOCATION: ["Agency ID","Latitude","Longitude","GPS Address","Physical Address","Location Source","Accuracy Metres","Verification Status","Verified By","Verified At","Updated At"],
+  MONITORING_VISITS: ["Visit ID","Agency ID","Visit Type","Visit Date","Officer","Latitude","Longitude","GPS Accuracy Metres","Personnel Present","Personnel Expected","Attendance Rate","Supervision Status","Welfare Status","Accommodation Status","Feeding Status","Safety Status","Findings","Corrective Actions","Responsible Person","Due Date","Follow-up Status","Evidence URLs","Created At","Created By"],
+  MONITORING_ACTIONS: ["Action ID","Visit ID","Agency ID","Action","Responsible Person","Due Date","Status","Closed Date","Closed By","Notes"],
+  AGENCY_PHOTOS: ["Photo ID","Agency ID","Photo URL","Caption","Photo Type","Status","Uploaded At","Uploaded By"],
+  AGENCY_CONTACTS: ["Contact ID","Agency ID","Name","Designation","Phone","WhatsApp","Email","Contact Type","Is Primary","Status","Created At","Updated At"],
+  AGENCY_BRANCHES: ["Branch ID","Agency ID","Branch Name","Region","District","Address","GPS","Latitude","Longitude","Phone","Email","Status","Created At","Updated At"],
+  AGENCY_SUPPORT: ["Support ID","Agency ID","Support Type","Description","Value","Eligibility","Effective From","Effective To","Status","Updated By","Updated At"],
+  AGENCY_REQUEST_DETAILS: ["Detail ID","Request ID","Position/Role","Quantity","Qualification","Skills","Allowance Type","Notes"],
+  POSTING_RECORDS: ["Posting ID","NSS Number","Agency ID","Agency Name At Posting","Batch","Posting Date","Effective Date","Posting Status","Source","Source Reference","Recorded At","Recorded By"],
+  POSTING_ACCEPTANCE: ["Acceptance ID","Posting ID","NSS Number","Agency ID","Response","Response Date","Reported Date","Remarks","Evidence URL","Recorded At"],
+  SUPERVISORS: ["Supervisor ID","Agency ID","Name","Designation","Phone","WhatsApp","Email","Employee Number","Status","Created At","Updated At"],
+  SUPERVISOR_ASSIGNMENTS: ["Assignment ID","NSS Number","Agency ID","Supervisor ID","Start Date","End Date","Status","Assigned By","Assigned At","Notes"],
+  SUPERVISOR_EVALUATIONS: ["Evaluation ID","Supervisor ID","Agency ID","Period Start","Period End","Evaluator","Score","Rating","Strengths","Areas for Improvement","Action Plan","Submitted At","Status"],
+  AGENCY_INSPECTIONS: ["Inspection ID","Agency ID","Inspection Type","Inspection Date","Inspector","Latitude","Longitude","GPS Accuracy","Personnel Expected","Personnel Present","Attendance Rate","Supervision Rating","Welfare Rating","Safety Rating","Findings","Recommendations","Due Date","Status","Evidence URLs","Created At"],
+  AGENCY_COMPLAINTS: ["Complaint ID","Agency ID","NSS Number","Complainant Role","Category","Priority","Subject","Description","Assigned To","Status","Resolution","Restricted","Submitted At","Updated At","Closed At"],
+  AGENCY_COMMUNICATIONS: ["Communication ID","Agency ID","Audience","Channel","Subject","Message","Recipient Count","Sent Count","Failed Count","Status","Created By","Created At"],
+  AGENCY_USERS: ["Agency User ID","Agency ID","Name","Email","Phone","Role","Account Status","Last Login","Created At","Created By"],
+  AGENCY_AUDIT_LOG: ["Audit ID","Timestamp","Actor","Actor Role","Agency ID","Action","Entity Type","Entity ID","Details","IP/Device"],
+  AGENCY_BENEFITS_HISTORY: ["History ID","Agency ID","Field","Old Value","New Value","Effective Date","Changed By","Changed At"],
+  AGENCY_GEOLOCATION_HISTORY: ["Location History ID","Agency ID","Latitude","Longitude","GPS Address","Source","Accuracy Metres","Verified By","Captured At"],
+  PERSONNEL_REPORTING: ["Reporting ID","NSS Number","Agency ID","Report Status","Expected Date","Actual Report Date","Confirmed By","Remarks","Evidence URL","Created At"],
+  PERSONNEL_ATTENDANCE: ["Attendance ID","NSS Number","Agency ID","Supervisor ID","Attendance Date","Status","Check In","Check Out","Remarks","Recorded By","Recorded At"],
+  AGENCY_VISIT_EVIDENCE: ["Evidence ID","Inspection ID","Agency ID","File URL","File Type","Caption","Uploaded By","Uploaded At"],
+  AGENCY_ACTION_TRACKER: ["Action ID","Agency ID","Related Type","Related ID","Action Required","Responsible Person","Due Date","Priority","Status","Completion Notes","Created At","Closed At"],
+  AGENCY_DOCUMENTS: ["Document ID","Agency ID","Document Type","Title","File URL","Issue Date","Expiry Date","Status","Uploaded By","Uploaded At"],
+  AGENCY_NOTIFICATION_LOG: ["Notification ID","Agency ID","Recipient Type","Recipient","Channel","Subject","Message","Delivery Status","Provider Reference","Sent At"]
+};
+
+function ensureAgencySheets_() {
+  const db = getDatabase();
+  Object.keys(AGENCY_SHEETS_).forEach(function(name) {
+    let sh = db.getSheetByName(name);
+    if (!sh) sh = db.insertSheet(name);
+    const lastCol = sh.getLastColumn();
+    const current = lastCol ? sh.getRange(1,1,1,lastCol).getDisplayValues()[0] : [];
+    AGENCY_SHEETS_[name].forEach(function(h) {
+      if (current.indexOf(h) < 0) sh.getRange(1, sh.getLastColumn()+1).setValue(h);
+    });
+  });
+}
+
+function agencyHeaderMap_(sheet) {
+  const headers = sheet.getRange(1,1,1,sheet.getLastColumn()).getDisplayValues()[0];
+  const map = {};
+  headers.forEach(function(h,i){ map[String(h).trim()] = i; });
+  return map;
+}
+function agencyRows_(name) {
+  ensureAgencySheets_();
+  return getSheetObjects_(name);
+}
+function agencyAppend_(name, object) {
+  const sh = getDatabase().getSheetByName(name);
+  const map = agencyHeaderMap_(sh);
+  const row = new Array(sh.getLastColumn()).fill("");
+  Object.keys(object || {}).forEach(function(k){ if (map[k] !== undefined) row[map[k]] = object[k]; });
+  sh.appendRow(row);
+}
+function agencyUpdateById_(name, idHeader, id, patch) {
+  const sh = getDatabase().getSheetByName(name);
+  const values = sh.getDataRange().getValues();
+  const headers = values[0].map(String);
+  const idCol = headers.indexOf(idHeader);
+  if (idCol < 0) throw new Error("Missing identifier column in " + name);
+  for (let r=1;r<values.length;r++) {
+    if (String(values[r][idCol]) !== String(id)) continue;
+    Object.keys(patch || {}).forEach(function(k){
+      const c=headers.indexOf(k);
+      if(c>=0) sh.getRange(r+1,c+1).setValue(patch[k]);
+    });
+    return true;
+  }
+  return false;
+}
+function agencyNormalise_(v) { return String(v == null ? "" : v).trim().toLowerCase().replace(/\s+/g," "); }
+function agencyIdForName_(name) {
+  const key=agencyNormalise_(name);
+  const found=agencyRows_("USER_AGENCIES").filter(function(a){return agencyNormalise_(a.Name)===key;})[0];
+  return found ? String(found["Agency ID"]) : "";
+}
+function agencyLog_(actor, agencyId, action, details) {
+  agencyAppend_("AGENCY_AUDIT", {Date:new Date(),Actor:actor||"system", "Agency ID":agencyId||"",Action:action,Details:details||""});
+}
+function requireAgencySecretariat_(token) {
+  const session=validateSession(token);
+  if(!session || session.valid!==true) throw new Error("Your session is invalid or expired.");
+  if(String(session.role||"").toUpperCase()!=="AGENCY SECRETARIAT") throw new Error("Agency Secretariat access is required.");
+  const agency=agencyRows_("USER_AGENCIES").filter(function(a){
+    return agencyNormalise_(a["Agency Account Email"])===agencyNormalise_(session.email) && String(a["Account Status"]).toUpperCase()==="ACTIVE";
+  })[0];
+  if(!agency) throw new Error("This account is not linked to an active agency.");
+  return {session:session, agency:agency};
+}
+function agencySafeProfile_(a) {
+  return {
+    agencyId:a["Agency ID"], companyCode:a["Company Code"], name:a.Name, branches:a.Branches,
+    region:a.Region,district:a.District,email:a.Email,phone:a["Phone Number"],address:a.Address,gps:a.GPS,
+    industry:a.Industry,payingStatus:a["Paying Status"],companyType:a["Company Type"],
+    ownership:a["Company Ownership"],category:a.Category,status:a.Status,dateRegistered:a["Date Registered"],
+    head:{name:a["Head Name"],designation:a["Head Designation"],phone:a["Head Phone"],whatsapp:a["Head WhatsApp"],email:a["Head Email"]},
+    motivation:a.Motivation, accommodation:a.Accommodation,feeding:a.Feeding,extraAllowance:a["Extra Allowance"],
+    amenities:a.Amenities,otherBenefits:a["Other Benefits"],images:a.Images,accountStatus:a["Account Status"]
+  };
+}
+function syncAgenciesFromMaster(token) {
+  const session=requireAdminSession_(token,["ADMIN"]);
+  ensureAgencySheets_();
+  const master=getDatabase().getSheetByName("MASTER_PERSONNEL");
+  if(!master || master.getLastRow()<2) return {status:"SUCCESS",added:0,matched:0,message:"No master personnel records found."};
+  const headers=master.getRange(1,1,1,master.getLastColumn()).getDisplayValues()[0];
+  const rows=master.getRange(2,1,master.getLastRow()-1,master.getLastColumn()).getValues();
+  function col(aliases){ for(let i=0;i<headers.length;i++){const n=agencyNormalise_(headers[i]).replace(/[^a-z0-9]/g,"");if(aliases.indexOf(n)>=0)return i;}return -1; }
+  const posting=col(["companypostedto","placeofposting"]);
+  const region=col(["regionpostedto","region"]);
+  const district=col(["districtpostedto","district"]);
+  if(posting<0) throw new Error('MASTER_PERSONNEL must contain "Company Posted To" or "Place of Posting".');
+  const known={}; agencyRows_("USER_AGENCIES").forEach(function(a){known[agencyNormalise_(a.Name)]=true;});
+  const found={};
+  rows.forEach(function(r){
+    const name=String(r[posting]||"").trim(); if(!name)return;
+    const k=agencyNormalise_(name);
+    if(!found[k]) found[k]={name:name,region:region>=0?String(r[region]||""):"",district:district>=0?String(r[district]||""):""};
+  });
+  let added=0;
+  Object.keys(found).forEach(function(k){
+    if(known[k])return;
+    const x=found[k], id=generateID_("AGY");
+    agencyAppend_("USER_AGENCIES",{
+      "Agency ID":id,"Company Code":id,"Name":x.name,Branches:1,Region:x.region,District:x.district,
+      Status:"Pending Completion","Date Registered":new Date(),"Account Status":"NOT ACTIVATED",
+      "Created By":session.email,"Profile Updated":"No"
+    });
+    added++;
+  });
+  agencyLog_(session.email,"","MASTER_SYNC","Added "+added+" newly identified agencies from MASTER_PERSONNEL.");
+  return {status:"SUCCESS",added:added,matched:Object.keys(found).length,message:added+" new agencies added for profile completion."};
+}
+function getAgencyManagementData(filters, token) {
+  const session=requireAdminSession_(token,["ADMIN"]);
+  ensureAgencySheets_(); filters=filters||{};
+  const q=agencyNormalise_(filters.search||"");
+  let agencies=agencyRows_("USER_AGENCIES");
+  if(q) agencies=agencies.filter(function(a){return [a.Name,a["Company Code"],a.Region,a.District,a.Email,a.Status].some(function(v){return agencyNormalise_(v).indexOf(q)>=0;});});
+  const master=getSheetObjects_("MASTER_PERSONNEL"), registered=getSheetObjects_("REGISTERED_PERSONNEL");
+  const supervisors=agencyRows_("AGENCY_SUPERVISORS"), assignments=agencyRows_("AGENCY_ASSIGNMENTS"), requests=agencyRows_("AGENCY_REQUESTS");
+  const enriched=agencies.map(function(a){
+    const nm=agencyNormalise_(a.Name), aid=String(a["Agency ID"]);
+    const posted=master.filter(function(p){return agencyNormalise_(p["Company Posted To"]||p["Place of Posting"])===nm;});
+    const acceptedNss={}; registered.forEach(function(p){acceptedNss[String(p["NSS Number"]||"").trim().toUpperCase()]=true;});
+    const accepted=posted.filter(function(p){return !!acceptedNss[String(p["NSS Number"]||"").trim().toUpperCase()];});
+    return Object.assign(agencySafeProfile_(a),{postedCount:posted.length,acceptedCount:accepted.length,
+      supervisors:supervisors.filter(function(s){return String(s["Agency ID"])===aid;}).length,
+      assignedCount:assignments.filter(function(x){return String(x["Agency ID"])===aid&&String(x.Status).toUpperCase()==="ACTIVE";}).length,
+      requests:requests.filter(function(x){return String(x["Agency ID"])===aid;}).length});
+  });
+  return {status:"SUCCESS",agencies:serialiseAdminValue_(enriched),summary:{
+    total:agencies.length,active:agencies.filter(function(a){return String(a["Account Status"]).toUpperCase()==="ACTIVE";}).length,
+    pending:agencies.filter(function(a){return String(a.Status).toUpperCase()!=="APPROVED";}).length,
+    posted:enriched.reduce(function(n,a){return n+a.postedCount;},0),accepted:enriched.reduce(function(n,a){return n+a.acceptedCount;},0)
+  },requests:serialiseAdminValue_(requests),batches:getActiveBatches()};
+}
+function saveAgencyProfile(data, token) {
+  const session=requireAdminSession_(token,["ADMIN"]); ensureAgencySheets_(); data=data||{};
+  const id=String(data.agencyId||"").trim(); if(!id) throw new Error("Agency ID is required.");
+  const allowed=["Company Code","Name","Branches","Region","District","Email","Phone Number","Address","GPS","Industry","Paying Status","Company Type","Company Ownership","Category","Status","Date Registered","Head Name","Head Designation","Head Phone","Head WhatsApp","Head Email","Motivation","Accommodation","Feeding","Extra Allowance","Amenities","Other Benefits","Images"];
+  const patch={}; allowed.forEach(function(k){if(data[k]!==undefined)patch[k]=String(data[k]).trim();});
+  if(patch.Name && agencyRows_("USER_AGENCIES").some(function(a){return String(a["Agency ID"])!==id&&agencyNormalise_(a.Name)===agencyNormalise_(patch.Name);})) throw new Error("An agency with this name already exists.");
+  patch["Profile Updated"]=new Date();patch["Updated By"]=session.email;
+  if(!agencyUpdateById_("USER_AGENCIES","Agency ID",id,patch)) throw new Error("Agency not found.");
+  agencyLog_(session.email,id,"PROFILE_UPDATED","Agency profile updated.");
+  return {status:"SUCCESS",message:"Agency profile saved."};
+}
+function activateAgencyAccount(agencyId, token) {
+  const session=requireAdminSession_(token,["ADMIN"]); ensureAgencySheets_();
+  const a=agencyRows_("USER_AGENCIES").filter(function(x){return String(x["Agency ID"])===String(agencyId);})[0];
+  if(!a) throw new Error("Agency not found.");
+  const email=String(a["Head Email"]||a.Email||"").trim().toLowerCase();
+  const name=String(a["Head Name"]||a.Name||"").trim();
+  if(!email||!/@/.test(email)) throw new Error("Complete a valid head/contact email before activation.");
+  if(!String(a["Head Name"]||"").trim()) throw new Error("Complete the head/contact person's name before activation.");
+  if(String(a.Status||"").toUpperCase()!=="APPROVED") throw new Error("Approve the agency profile before activating its portal account.");
+  const users=getDatabase().getSheetByName("USERS"), vals=users.getDataRange().getValues();
+  const exists=vals.slice(1).some(function(r){return agencyNormalise_(r[2])===agencyNormalise_(email);});
+  if(exists) throw new Error("A system account already uses this email. Resolve the account conflict before activation.");
+  const temp=Utilities.getUuid().replace(/-/g,"").slice(0,16)+"Aa9!";
+  users.appendRow([generateID_("USR"),name,email,hashUserPassword_(temp),"AGENCY SECRETARIAT","ACTIVE",new Date()]);
+  agencyUpdateById_("USER_AGENCIES","Agency ID",agencyId,{"Agency Account Email":email,"Account Status":"ACTIVE"});
+  agencyLog_(session.email,agencyId,"ACCOUNT_ACTIVATED","Agency portal account activated for "+email);
+  const message="Your NSA WAWM agency portal account has been activated. Login email: "+email+"\nTemporary password: "+temp+"\nPlease sign in and change your password immediately.";
+  try { if(typeof sendEmail_==="function") sendEmail_(email,"NSA WAWM Agency Portal Access",message); } catch(e) { Logger.log("Agency activation email failed: "+e.message); }
+  return {status:"SUCCESS",message:"Agency account activated. A temporary password was generated and emailed where email delivery is configured.",temporaryPassword:temp,email:email};
+}
+function getAgencyPortalData(token) {
+  const ctx=requireAgencySecretariat_(token), a=ctx.agency, aid=String(a["Agency ID"]);
+  const supervisors=agencyRows_("AGENCY_SUPERVISORS").filter(function(s){return String(s["Agency ID"])===aid;});
+  const assignments=agencyRows_("AGENCY_ASSIGNMENTS").filter(function(x){return String(x["Agency ID"])===aid&&String(x.Status).toUpperCase()==="ACTIVE";});
+  const reg=getSheetObjects_("REGISTERED_PERSONNEL"), master=getSheetObjects_("MASTER_PERSONNEL");
+  const people=master.filter(function(p){return agencyNormalise_(p["Company Posted To"]||p["Place of Posting"])===agencyNormalise_(a.Name);}).map(function(p){
+    const nss=String(p["NSS Number"]||"").trim();
+    const accepted=reg.filter(function(r){return String(r["NSS Number"]||"").trim()===nss;})[0]||{};
+    const assignment=assignments.filter(function(x){return String(x["NSS Number"])===nss;})[0]||{};
+    const supervisor=supervisors.filter(function(s){return String(s["Supervisor ID"])===String(assignment["Supervisor ID"]);})[0]||{};
+    return {nss:nss,name:[p["Other Names"],p["Last Name"]].filter(Boolean).join(" "),batch:p.Batch,course:p.Course,phone:accepted["Phone Number"]||p["Phone Number"],email:accepted.Email||p.Email,accepted:!!accepted["NSS Number"],supervisorId:assignment["Supervisor ID"]||"",supervisorName:supervisor.Name||"",supervisorPhone:supervisor.Phone||"",supervisorWhatsApp:supervisor.WhatsApp||"",supervisorEmail:supervisor.Email||""};
+  });
+  const requests=agencyRows_("AGENCY_REQUESTS").filter(function(x){return String(x["Agency ID"])===aid;});
+  return {status:"SUCCESS",agency:agencySafeProfile_(a),personnel:serialiseAdminValue_(people),supervisors:serialiseAdminValue_(supervisors),requests:serialiseAdminValue_(requests),batches:serialiseAdminValue_(getActiveBatches())};
+}
+function saveAgencyPortalProfile(data, token) {
+  const ctx=requireAgencySecretariat_(token), a=ctx.agency; data=data||{};
+  const allowed=["Head Name","Head Designation","Head Phone","Head WhatsApp","Head Email","Phone Number","Email","Address","GPS","Motivation","Accommodation","Feeding","Extra Allowance","Amenities","Other Benefits","Images"];
+  const patch={}; allowed.forEach(function(k){if(data[k]!==undefined)patch[k]=String(data[k]).trim();});
+  patch["Profile Updated"]=new Date();patch["Updated By"]=ctx.session.email;
+  agencyUpdateById_("USER_AGENCIES","Agency ID",a["Agency ID"],patch);
+  agencyLog_(ctx.session.email,a["Agency ID"],"AGENCY_SELF_UPDATE","Agency profile and facilities updated.");
+  return {status:"SUCCESS",message:"Agency profile updated."};
+}
+function saveAgencySupervisor(data, token) {
+  const ctx=requireAgencySecretariat_(token), a=ctx.agency; data=data||{};
+  const name=String(data.name||"").trim(),designation=String(data.designation||"").trim();
+  if(!name||!designation||!String(data.phone||"").trim()) throw new Error("Supervisor name, designation and phone are required.");
+  const id=String(data.supervisorId||"").trim()||generateID_("SUP");
+  const record={"Supervisor ID":id,"Agency ID":a["Agency ID"],Name:name,Designation:designation,Phone:String(data.phone||""),WhatsApp:String(data.whatsapp||""),Email:String(data.email||""),Status:"ACTIVE","Created Date":new Date(),"Created By":ctx.session.email};
+  const existing=agencyRows_("AGENCY_SUPERVISORS").filter(function(s){return String(s["Supervisor ID"])===id&&String(s["Agency ID"])===String(a["Agency ID"]);})[0];
+  if(existing) agencyUpdateById_("AGENCY_SUPERVISORS","Supervisor ID",id,record); else agencyAppend_("AGENCY_SUPERVISORS",record);
+  agencyLog_(ctx.session.email,a["Agency ID"],"SUPERVISOR_SAVED",name+" / "+designation);
+  return {status:"SUCCESS",supervisorId:id,message:"Supervisor saved."};
+}
+function assignAgencySupervisor(nss, supervisorId, token) {
+  const ctx=requireAgencySecretariat_(token), a=ctx.agency;
+  const key=String(nss||"").trim(), sid=String(supervisorId||"").trim();
+  if(!key||!sid) throw new Error("Select a personnel record and supervisor.");
+  const master=findMasterPersonnel_(key);
+  if(!master||agencyNormalise_(master["Company Posted To"]||master["Place of Posting"])!==agencyNormalise_(a.Name)) throw new Error("This personnel is not officially posted to your agency in MASTER_PERSONNEL.");
+  const supervisor=agencyRows_("AGENCY_SUPERVISORS").filter(function(s){return String(s["Supervisor ID"])===sid&&String(s["Agency ID"])===String(a["Agency ID"])&&String(s.Status).toUpperCase()==="ACTIVE";})[0];
+  if(!supervisor) throw new Error("The selected supervisor is not active under this agency.");
+  const sh=getDatabase().getSheetByName("AGENCY_ASSIGNMENTS"), rows=sh.getDataRange().getValues(), h=rows[0].map(String);
+  const nssCol=h.indexOf("NSS Number"),agencyCol=h.indexOf("Agency ID"),statusCol=h.indexOf("Status");
+  for(let i=1;i<rows.length;i++) if(String(rows[i][nssCol])===key&&String(rows[i][agencyCol])===String(a["Agency ID"])&&String(rows[i][statusCol]).toUpperCase()==="ACTIVE") sh.getRange(i+1,statusCol+1).setValue("REASSIGNED");
+  agencyAppend_("AGENCY_ASSIGNMENTS",{"Assignment ID":generateID_("ASN"),"NSS Number":key,"Agency ID":a["Agency ID"],"Supervisor ID":sid,"Assigned Date":new Date(),"Assigned By":ctx.session.email,Status:"ACTIVE"});
+  agencyLog_(ctx.session.email,a["Agency ID"],"SUPERVISOR_ASSIGNED",key+" assigned to "+supervisor.Name);
+  return {status:"SUCCESS",message:"Supervisor assigned."};
+}
+function createAgencyPersonnelRequest(data, token) {
+  const ctx=requireAgencySecretariat_(token),a=ctx.agency;data=data||{};
+  const batch=String(data.batch||"").trim(),qty=Math.floor(Number(data.quantity));
+  if(!batch||!qty||qty<1||qty>5000) throw new Error("Select an eligible batch and enter a valid requested number.");
+  const b=getActiveBatches().filter(function(x){return String(x.batch||x["Batch Name"]||"")===batch;})[0];
+  if(!b) throw new Error("The selected batch is not active.");
+  const rawStart=String(b.startDate||b["Start Date"]||"");
+  const parts=rawStart.split("/");
+  const start=parts.length===3?new Date(Number(parts[2]),Number(parts[1])-1,Number(parts[0])):new Date(rawStart);
+  if(isNaN(start.getTime())) throw new Error("The selected batch does not have a valid service start date.");
+  if(start<=new Date()) throw new Error("Requests are limited to batches whose service start date has not yet arrived.");
+  const id=generateID_("REQ");
+  agencyAppend_("AGENCY_REQUESTS",{"Request ID":id,"Agency ID":a["Agency ID"],Batch:batch,"Requested Number":qty,"Requested Date":new Date(),"Required By":data.requiredBy||"","Reason":String(data.reason||""),Status:"SUBMITTED"});
+  agencyLog_(ctx.session.email,a["Agency ID"],"PERSONNEL_REQUEST_SUBMITTED",batch+" / "+qty);
+  return {status:"SUCCESS",requestId:id,message:"Personnel request submitted for Secretariat review."};
+}
+function reviewAgencyPersonnelRequest(requestId,decision,notes,token) {
+  const session=requireAdminSession_(token,["ADMIN"]),d=String(decision||"").toUpperCase();
+  if(["APPROVED","REJECTED","FULFILLED"].indexOf(d)<0) throw new Error("Invalid request decision.");
+  const ok=agencyUpdateById_("AGENCY_REQUESTS","Request ID",requestId,{Status:d,"Decision Notes":String(notes||""),"Reviewed By":session.email,"Reviewed Date":new Date()});
+  if(!ok) throw new Error("Request not found.");
+  agencyLog_(session.email,"","REQUEST_"+d,String(requestId)+" "+String(notes||""));
+  return {status:"SUCCESS",message:"Request decision saved."};
+}
+function getAgencyInformationForPersonnel(nss, token) {
+  // Access is restricted to a valid signed-in Secretariat/admin session in this release.
+  // The personnel-facing card is returned through the authorised personnel profile workflow.
+  const session=validateSession(token);
+  if(!session||session.valid!==true) throw new Error("Please sign in to view agency information.");
+  const role=String(session.role||"").toUpperCase();
+  if(["ADMIN","SUPER ADMIN"].indexOf(role)<0) throw new Error("You are not authorised to view this personnel agency record.");
+  const person=findRegisteredPersonnel_(String(nss||"").trim());
+  if(!person) throw new Error("Registered personnel record not found.");
+  const agency=agencyRows_("USER_AGENCIES").filter(function(a){return agencyNormalise_(a.Name)===agencyNormalise_(person["Company Posted To"]||person.Institution);})[0];
+  if(!agency) return {status:"SUCCESS",agency:null,message:"Agency profile has not yet been completed."};
+  const assignment=agencyRows_("AGENCY_ASSIGNMENTS").filter(function(x){return String(x["NSS Number"])===String(nss)&&String(x.Status).toUpperCase()==="ACTIVE";})[0];
+  const supervisor=assignment?agencyRows_("AGENCY_SUPERVISORS").filter(function(s){return String(s["Supervisor ID"])===String(assignment["Supervisor ID"]);})[0]:null;
+  const postedCount=getSheetObjects_("MASTER_PERSONNEL").filter(function(p){return agencyNormalise_(p["Company Posted To"]||p["Place of Posting"])===agencyNormalise_(agency.Name);}).length;
+  const agencyInfo=agencySafeProfile_(agency);agencyInfo.postedCount=postedCount;
+  return {status:"SUCCESS",agency:agencyInfo,supervisor:supervisor||null};
+}
+
+
+/* ============================================================
+ * GEOSPATIAL PERSONNEL MONITORING MODULE
+ * Uses the existing DRS spreadsheet and authoritative personnel
+ * records. All service-status calculations use Ghana local date.
+ * ============================================================ */
+function gisToday_() {
+  const tz = Session.getScriptTimeZone() || "Africa/Accra";
+  return Utilities.formatDate(new Date(), tz, "yyyy-MM-dd");
+}
+function gisDateKey_(v) {
+  if (!v) return "";
+  let d = v instanceof Date ? v : new Date(v);
+  if (isNaN(d.getTime())) {
+    const s = String(v).trim(), m = s.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/);
+    if (m) d = new Date(Number(m[3]), Number(m[2])-1, Number(m[1]));
+  }
+  if (isNaN(d.getTime())) return "";
+  return Utilities.formatDate(d, Session.getScriptTimeZone() || "Africa/Accra", "yyyy-MM-dd");
+}
+function gisStatus_(start, end, today) {
+  const s = gisDateKey_(start), e = gisDateKey_(end);
+  if (!s || !e) return "DATE_REVIEW";
+  if (e < today) return "COMPLETED";
+  if (s > today) return "UPCOMING";
+  return "ACTIVE";
+}
+function gisCoordinates_(agency, geo) {
+  let lat = geo ? Number(geo.Latitude) : NaN, lng = geo ? Number(geo.Longitude) : NaN;
+  if (!isFinite(lat) || !isFinite(lng)) {
+    const raw = String((geo && geo.GPS) || agency.GPS || "").trim();
+    const m = raw.match(/^\s*(-?\d+(?:\.\d+)?)\s*[,; ]\s*(-?\d+(?:\.\d+)?)\s*$/);
+    if (m) { lat = Number(m[1]); lng = Number(m[2]); }
+  }
+  if (!isFinite(lat) || !isFinite(lng) || Math.abs(lat)>90 || Math.abs(lng)>180) return null;
+  return {lat:lat,lng:lng};
+}
+function gisAgencyGeo_(agencyId) {
+  const rows = agencyRows_("AGENCY_GEOLOCATION");
+  return rows.filter(function(x){return String(x["Agency ID"])===String(agencyId);})[0] || null;
+}
+function gisCurrentPersonnel_() {
+  const today = gisToday_();
+  const master = getSheetObjects_("MASTER_PERSONNEL");
+  const registered = getSheetObjects_("REGISTERED_PERSONNEL");
+  const regByNss = {};
+  registered.forEach(function(p){ const k=String(p["NSS Number"]||"").trim().toUpperCase(); if(k) regByNss[k]=p; });
+  return master.map(function(m){
+    const nss=String(m["NSS Number"]||"").trim().toUpperCase();
+    if(!nss) return null;
+    const reg=regByNss[nss]||{};
+    const start=m["Service Start Date"]||reg["Service Start Date"]||m["Start Date"]||"";
+    const end=m["Service End Date"]||reg["Service End Date"]||m["End Date"]||"";
+    const status=gisStatus_(start,end,today);
+    const posting=String(m["Company Posted To"]||m["Place of Posting"]||reg["Place of Posting"]||"").trim();
+    if(!posting) return null;
+    return {
+      nss:nss,name:String(reg["Full Name"]||[m["Other Names"],m["Last Name"]].filter(Boolean).join(" ")||m["Full Name"]||"Unknown"),
+      registrationNumber:String(reg["Registration Number"]||""),batch:String(m.Batch||reg.Batch||""),
+      allowanceType:String(m["Allowance Type"]||reg["Allowance Type"]||""),
+      serviceStartDate:gisDateKey_(start),serviceEndDate:gisDateKey_(end),serviceStatus:status,
+      industry:String(m.Industry||""),phone:String(reg["Phone Number"]||m["Phone Number"]||""),
+      email:String(reg.Email||m.Email||""),photoUrl:String(reg["Photo URL"]||""),
+      posting:posting,accepted:!!reg["Registration Number"],district:String(m["District Posted To"]||reg["District Posted"]||"")
+    };
+  }).filter(Boolean);
+}
+
+
+function migrateAgencyLegacyRecords_(){
+  ensureAgencySheets_();
+  const contacts=agencyRows_("AGENCY_CONTACTS"), supervisors=agencyRows_("SUPERVISORS"), assignments=agencyRows_("SUPERVISOR_ASSIGNMENTS"), requests=agencyRows_("AGENCY_REQUESTS");
+  const seenContacts={};contacts.forEach(x=>seenContacts[String(x["Agency ID"])+"|"+String(x.Email||"").toLowerCase()]=true);
+  agencyRows_("USER_AGENCIES").forEach(a=>{const key=String(a["Agency ID"])+"|"+String(a["Head Email"]||"").toLowerCase();if(a["Head Name"]&&!seenContacts[key]){agencyAppend_("AGENCY_CONTACTS",{"Contact ID":"CT-"+Utilities.getUuid().slice(0,12),"Agency ID":a["Agency ID"],Name:a["Head Name"],Designation:a["Head Designation"],Phone:a["Head Phone"],WhatsApp:a["Head WhatsApp"],Email:a["Head Email"],"Contact Type":"HEAD / PRIMARY", "Is Primary":"YES",Status:"ACTIVE","Created At":new Date(),"Updated At":new Date()});seenContacts[key]=true;}});
+  const supSeen={};supervisors.forEach(x=>supSeen[String(x["Supervisor ID"])]=true);
+  agencyRows_("AGENCY_SUPERVISORS").forEach(x=>{if(!supSeen[String(x["Supervisor ID"])])agencyAppend_("SUPERVISORS",{"Supervisor ID":x["Supervisor ID"],"Agency ID":x["Agency ID"],Name:x.Name,Designation:x.Designation,Phone:x.Phone,WhatsApp:x.WhatsApp,Email:x.Email,Status:x.Status,"Created At":x["Created Date"],"Updated At":new Date()});});
+  const asSeen={};assignments.forEach(x=>asSeen[String(x["Assignment ID"])]=true);
+  agencyRows_("AGENCY_ASSIGNMENTS").forEach(x=>{if(!asSeen[String(x["Assignment ID"])])agencyAppend_("SUPERVISOR_ASSIGNMENTS",{"Assignment ID":x["Assignment ID"],"NSS Number":x["NSS Number"],"Agency ID":x["Agency ID"],"Supervisor ID":x["Supervisor ID"],"Start Date":x["Assigned Date"],Status:x.Status,"Assigned By":x["Assigned By"],"Assigned At":x["Assigned Date"],Notes:x.Notes});});
+}
+
+/* ===== Agency file import and schema inventory ===== */
+function importUserAgencies(rows, token) {
+  const session=requireAdminSession_(token,["ADMIN","SUPER ADMIN"]);
+  if(!Array.isArray(rows)||!rows.length)throw new Error("The upload contains no agency rows.");
+  if(rows.length>5000)throw new Error("Upload is limited to 5,000 agency rows per import.");
+  const lock=LockService.getScriptLock();lock.waitLock(30000);
+  try {
+    ensureAgencySheets_();const existing=agencyRows_("USER_AGENCIES"),byCode={},byName={};
+    existing.forEach(a=>{if(a["Company Code"])byCode[agencyNormalise_(a["Company Code"])]=a;if(a.Name)byName[agencyNormalise_(a.Name)]=a;});
+    const aliases={"company code":"Company Code","code":"Company Code","name":"Name","company name":"Name","branches":"Branches","branch count":"Branches","region":"Region","district":"District","email":"Email","official email":"Email","phone number":"Phone Number","phone":"Phone Number","address":"Address","gps":"GPS","gps address":"GPS","industry":"Industry","paying status":"Paying Status","paying":"Paying Status","company type":"Company Type","company ownership":"Company Ownership","ownership":"Company Ownership","category":"Category","status":"Status","date registered":"Date Registered"};
+    let added=0,updated=0,skipped=0;
+    rows.forEach(raw=>{const obj={};Object.keys(raw||{}).forEach(k=>{const h=aliases[String(k).trim().toLowerCase()];if(h)obj[h]=raw[k];});const name=String(obj.Name||"").trim();if(!name){skipped++;return;}const code=String(obj["Company Code"]||"").trim(),old=(code&&byCode[agencyNormalise_(code)])||byName[agencyNormalise_(name)];
+      if(old){const patch={};Object.keys(obj).forEach(k=>{if(String(obj[k]||"").trim()!=="")patch[k]=obj[k];});patch["Updated By"]=session.email;agencyUpdateById_("USER_AGENCIES","Agency ID",old["Agency ID"],patch);const merged=Object.assign({},old,patch);if(code)byCode[agencyNormalise_(code)]=merged;byName[agencyNormalise_(name)]=merged;updated++;}
+      else{obj["Agency ID"]="AG-"+Utilities.getUuid().replace(/-/g,"").slice(0,14).toUpperCase();obj.Status=obj.Status||"Pending Completion";obj["Account Status"]="NOT ACTIVATED";obj["Date Registered"]=obj["Date Registered"]||new Date();obj["Created By"]=session.email;obj["Updated By"]=session.email;agencyAppend_("USER_AGENCIES",obj);const created=Object.assign({},obj);if(code)byCode[agencyNormalise_(code)]=created;byName[agencyNormalise_(name)]=created;added++;}
+    });
+    agencyLog_(session.email,"","AGENCY_FILE_IMPORT","Added "+added+", updated "+updated+", skipped "+skipped+" of "+rows.length+" rows.");return {status:"SUCCESS",total:rows.length,added,updated,skipped,message:"Agency import completed."};
+  } finally {lock.releaseLock();}
+}
+function getAgencyOperationalRegister(token){requireAdminSession_(token,["ADMIN","SUPER ADMIN"]);ensureAgencySheets_();const counts={};Object.keys(AGENCY_SHEETS_).forEach(n=>counts[n]=Math.max(0,getDatabase().getSheetByName(n).getLastRow()-1));return {status:"SUCCESS",tables:counts,agencyCount:counts.USER_AGENCIES||0,generatedAt:new Date()};}
+
+function getGeospatialFilterOptions(token) {
+  requireAdminSession_(token, ["ADMIN","SUPER ADMIN"]);
+  const agencies=agencyRows_("USER_AGENCIES"), people=gisCurrentPersonnel_();
+  function unique(a){return Array.from(new Set(a.filter(function(x){return String(x||"").trim();}))).sort();}
+  return {status:"SUCCESS",industries:unique(agencies.map(x=>x.Industry)),regions:unique(agencies.map(x=>x.Region)),
+    districts:unique(agencies.map(x=>x.District)),categories:unique(agencies.map(x=>x.Category)),
+    ownerships:unique(agencies.map(x=>x["Company Ownership"])),payingStatuses:unique(agencies.map(x=>x["Paying Status"])),
+    batches:unique(people.map(x=>x.batch)),allowanceTypes:unique(people.map(x=>x.allowanceType)),
+    serviceYears:unique(people.map(x=>x.serviceStartDate ? x.serviceStartDate.slice(0,4) : ""))};
+}
+function getGeospatialDashboardData(token, filters) {
+  requireAdminSession_(token, ["ADMIN","SUPER ADMIN"]);
+  ensureAgencySheets_(); filters=filters||{};
+  const agencies=agencyRows_("USER_AGENCIES"), people=gisCurrentPersonnel_(), today=gisToday_();
+  const norm=agencyNormalise_;
+  const selected = agencies.filter(function(a){
+    const checks=[["region","Region"],["district","District"],["industry","Industry"],["category","Category"],["ownership","Company Ownership"],["payingStatus","Paying Status"]];
+    return checks.every(function(c){return !filters[c[0]] || norm(a[c[1]])===norm(filters[c[0]]);});
+  });
+  const result=selected.map(function(a){
+    const aid=String(a["Agency ID"]), geo=gisAgencyGeo_(aid), coords=gisCoordinates_(a,geo);
+    const list=people.filter(function(p){return norm(p.posting)===norm(a.Name);});
+    const active=list.filter(p=>p.serviceStatus==="ACTIVE"), upcoming=list.filter(p=>p.serviceStatus==="UPCOMING"), completed=list.filter(p=>p.serviceStatus==="COMPLETED");
+    const filtered=active.filter(function(p){
+      return (!filters.batch||norm(p.batch)===norm(filters.batch)) &&
+        (!filters.allowanceType||norm(p.allowanceType)===norm(filters.allowanceType)) &&
+        (!filters.serviceYear||String(p.serviceStartDate).slice(0,4)===String(filters.serviceYear));
+    });
+    const categories={};
+    filtered.forEach(function(p){const k=p.allowanceType||"Unspecified";categories[k]=(categories[k]||0)+1;});
+    return {agencyId:aid,name:a.Name,companyCode:a["Company Code"],region:a.Region,district:a.District,
+      industry:a.Industry,category:a.Category,ownership:a["Company Ownership"],payingStatus:a["Paying Status"],
+      status:a.Status,address:a.Address,gpsAddress:a.GPS,coordinates:coords,
+      locationVerification:geo?geo["Verification Status"]:"UNVERIFIED",
+      activePersonnel:filtered.map(function(p){return {name:p.name,nss:p.nss,registrationNumber:p.registrationNumber,batch:p.batch,
+        allowanceType:p.allowanceType,serviceStartDate:p.serviceStartDate,serviceEndDate:p.serviceEndDate,
+        serviceStatus:p.serviceStatus,phone:p.phone,email:p.email,photoUrl:p.photoUrl};}),
+      activeCount:filtered.length,upcomingCount:upcoming.length,completedCount:completed.length,
+      totalMatched:filtered.length+upcoming.length+completed.length,allowanceBreakdown:categories,
+      head:{name:a["Head Name"],designation:a["Head Designation"],phone:a["Head Phone"],whatsapp:a["Head WhatsApp"],email:a["Head Email"]},
+      motivation:a.Motivation,accommodation:a.Accommodation,feeding:a.Feeding,extraAllowance:a["Extra Allowance"],
+      amenities:a.Amenities,otherBenefits:a["Other Benefits"],images:String(a.Images||"").split(/\r?\n/).filter(Boolean),
+      supervisorCount:agencyRows_("AGENCY_SUPERVISORS").filter(s=>String(s["Agency ID"])===aid&&String(s.Status).toUpperCase()==="ACTIVE").length};
+  });
+  const active=people.filter(p=>p.serviceStatus==="ACTIVE"), upcoming=people.filter(p=>p.serviceStatus==="UPCOMING"), completed=people.filter(p=>p.serviceStatus==="COMPLETED");
+  const mapped=result.filter(a=>a.coordinates);
+  return {status:"SUCCESS",asOf:today,summary:{agencies:result.length,mappedAgencies:mapped.length,unmappedAgencies:result.length-mapped.length,
+    activePersonnel:active.length,upcomingPersonnel:upcoming.length,completedPersonnel:completed.length},
+    agencies:result,unmapped:result.filter(a=>!a.coordinates).map(a=>({agencyId:a.agencyId,name:a.name,gps:a.gpsAddress}))};
+}
+function saveAgencyGeolocation(data, token) {
+  const session=requireAdminSession_(token, ["ADMIN","SUPER ADMIN"]); ensureAgencySheets_(); data=data||{};
+  const id=String(data.agencyId||"").trim(), lat=Number(data.latitude), lng=Number(data.longitude);
+  if(!id) throw new Error("Agency ID is required.");
+  if(!isFinite(lat)||!isFinite(lng)||Math.abs(lat)>90||Math.abs(lng)>180) throw new Error("Enter valid latitude and longitude.");
+  const agency=agencyRows_("USER_AGENCIES").filter(a=>String(a["Agency ID"])===id)[0];
+  if(!agency) throw new Error("Agency not found.");
+  const sh=getDatabase().getSheetByName("AGENCY_GEOLOCATION"), existing=agencyRows_("AGENCY_GEOLOCATION").filter(x=>String(x["Agency ID"])===id)[0];
+  const record={"Agency ID":id,Latitude:lat,Longitude:lng,"GPS Address":String(data.gpsAddress||agency.GPS||""),
+    "Physical Address":String(data.physicalAddress||agency.Address||""),"Location Source":String(data.source||"MAP_PIN"),
+    "Accuracy Metres":data.accuracyMetres||"","Verification Status":data.verified===true?"VERIFIED":"UNVERIFIED",
+    "Verified By":data.verified===true?session.email:"","Verified At":data.verified===true?new Date():"",
+    "Updated At":new Date()};
+  if(existing) agencyUpdateById_("AGENCY_GEOLOCATION","Agency ID",id,record); else agencyAppend_("AGENCY_GEOLOCATION",record);
+  agencyLog_(session.email,id,"GEOLOCATION_UPDATED",lat+","+lng+" / "+record["Location Source"]);
+  return {status:"SUCCESS",message:"Agency coordinates saved.",coordinates:{lat:lat,lng:lng}};
+}
+function saveMonitoringVisit(data, token) {
+  const session=requireAdminSession_(token, ["ADMIN","SUPER ADMIN"]); ensureAgencySheets_(); data=data||{};
+  const agencyId=String(data.agencyId||"").trim(), visitType=String(data.visitType||"PHYSICAL").toUpperCase();
+  if(!agencyId) throw new Error("Select an agency.");
+  if(["PHYSICAL","REMOTE"].indexOf(visitType)<0) throw new Error("Invalid monitoring visit type.");
+  const agency=agencyRows_("USER_AGENCIES").filter(a=>String(a["Agency ID"])===agencyId)[0];
+  if(!agency) throw new Error("Agency not found.");
+  let lat="",lng="";
+  if(visitType==="PHYSICAL") {
+    lat=Number(data.latitude);lng=Number(data.longitude);
+    if(!isFinite(lat)||!isFinite(lng)||Math.abs(lat)>90||Math.abs(lng)>180) throw new Error("A physical visit requires valid GPS coordinates.");
+  }
+  const id=generateID_("VIS");
+  const record={"Visit ID":id,"Agency ID":agencyId,"Visit Type":visitType,"Visit Date":data.visitDate?new Date(data.visitDate):new Date(),
+    Officer:session.email,Latitude:lat,Longitude:lng,"GPS Accuracy Metres":data.accuracyMetres||"",
+    "Personnel Present":Number(data.personnelPresent||0),"Personnel Expected":Number(data.personnelExpected||0),
+    "Attendance Rate":Number(data.personnelExpected)>0?Number(data.personnelPresent||0)/Number(data.personnelExpected):"",
+    "Supervision Status":String(data.supervisionStatus||""),"Welfare Status":String(data.welfareStatus||""),
+    "Accommodation Status":String(data.accommodationStatus||""),"Feeding Status":String(data.feedingStatus||""),
+    "Safety Status":String(data.safetyStatus||""),Findings:String(data.findings||""),
+    "Corrective Actions":String(data.correctiveActions||""),"Responsible Person":String(data.responsiblePerson||""),
+    "Due Date":data.dueDate||"","Follow-up Status":data.correctiveActions?"OPEN":"NONE",
+    "Evidence URLs":Array.isArray(data.evidenceUrls)?data.evidenceUrls.join("\n"):String(data.evidenceUrls||""),
+    "Created At":new Date(),"Created By":session.email};
+  agencyAppend_("MONITORING_VISITS",record);
+  if(data.correctiveActions) agencyAppend_("MONITORING_ACTIONS",{"Action ID":generateID_("ACT"),"Visit ID":id,"Agency ID":agencyId,
+    Action:String(data.correctiveActions),"Responsible Person":record["Responsible Person"],"Due Date":record["Due Date"],Status:"OPEN",Notes:""});
+  agencyLog_(session.email,agencyId,"MONITORING_"+visitType+"_RECORDED",id);
+  return {status:"SUCCESS",visitId:id,message:"Monitoring visit recorded."};
+}
+function getAgencyMonitoringHistory(agencyId, token) {
+  requireAdminSession_(token, ["ADMIN","SUPER ADMIN"]); ensureAgencySheets_();
+  const id=String(agencyId||"").trim();
+  return {status:"SUCCESS",visits:agencyRows_("MONITORING_VISITS").filter(x=>String(x["Agency ID"])===id)
+    .sort((a,b)=>new Date(b["Visit Date"])-new Date(a["Visit Date"])).slice(0,100),
+    actions:agencyRows_("MONITORING_ACTIONS").filter(x=>String(x["Agency ID"])===id)};
+}
+
+function sendAgencyCommunication(data, token) {
+  data=data||{};
+  const session=validateSession(token);
+  if(!session||session.valid!==true) throw new Error("Your session is invalid or expired.");
+  const role=String(session.role||"").toUpperCase();
+  if(["ADMIN","SUPER ADMIN","AGENCY SECRETARIAT"].indexOf(role)<0) throw new Error("You are not authorised to send agency communications.");
+  ensureAgencySheets_();
+  let agency=null;
+  if(role==="AGENCY SECRETARIAT") {
+    agency=requireAgencySecretariat_(token).agency;
+  } else {
+    const id=String(data.agencyId||"").trim();
+    if(id) agency=agencyRows_("USER_AGENCIES").filter(function(a){return String(a["Agency ID"])===id;})[0];
+  }
+  const targets=Array.isArray(data.targets)?data.targets:[];
+  const channels=Array.isArray(data.channels)?data.channels:[];
+  const message=String(data.message||"").trim(), subject=String(data.subject||"NSA WAWM Agency Notice").trim();
+  if(!message) throw new Error("Enter a message before sending.");
+  if(!targets.length||!channels.length) throw new Error("Select at least one recipient group and communication channel.");
+  let recipients=[];
+  const agencies=agency?[agency]:agencyRows_("USER_AGENCIES").filter(function(a){return String(a["Account Status"]).toUpperCase()==="ACTIVE";});
+  const registered=getSheetObjects_("REGISTERED_PERSONNEL");
+  agencies.forEach(function(a){
+    const aid=String(a["Agency ID"]),nm=agencyNormalise_(a.Name);
+    if(targets.indexOf("head")>=0) recipients.push({type:"Head/contact",name:a["Head Name"]||a.Name,email:a["Head Email"]||a.Email,phone:a["Head Phone"]||a["Phone Number"],whatsapp:a["Head WhatsApp"],agency:a.Name});
+    const sups=agencyRows_("AGENCY_SUPERVISORS").filter(function(s){return String(s["Agency ID"])===aid&&String(s.Status).toUpperCase()==="ACTIVE";});
+    if(targets.indexOf("supervisors")>=0) sups.forEach(function(s){recipients.push({type:"Supervisor",name:s.Name,email:s.Email,phone:s.Phone,whatsapp:s.WhatsApp,agency:a.Name});});
+    if(targets.indexOf("personnel")>=0) {
+      registered.filter(function(p){return agencyNormalise_(p["Company Posted To"]||p.Institution)===nm;}).forEach(function(p){
+        recipients.push({type:"Personnel",name:p["Full Name"],email:p.Email,phone:p["Phone Number"],whatsapp:p["WhatsApp Number"]||p["Phone Number"],agency:a.Name});
+      });
+    }
+  });
+  const unique={}; recipients=recipients.filter(function(r){const k=agencyNormalise_(r.email||r.phone);if(!k||unique[k])return false;unique[k]=true;return true;});
+  let emailSent=0,smsSent=0,failed=0; const whatsappLinks=[];
+  recipients.forEach(function(r){
+    let delivered=false;
+    if(channels.indexOf("email")>=0&&r.email) {try{if(sendEmail_(r.email,subject,message)){emailSent++;delivered=true;}}catch(e){Logger.log(e.message);}}
+    if(channels.indexOf("sms")>=0&&r.phone) {try{if(sendSMSOnline_(r.phone,message)){smsSent++;delivered=true;}}catch(e){Logger.log(e.message);}}
+    if(channels.indexOf("whatsapp")>=0&&(r.whatsapp||r.phone)) whatsappLinks.push({name:r.name,role:r.type,agency:r.agency,url:"https://wa.me/"+String(r.whatsapp||r.phone).replace(/[^0-9]/g,"")+"?text="+encodeURIComponent(message)});
+    if((channels.indexOf("email")>=0||channels.indexOf("sms")>=0)&&!delivered) failed++;
+  });
+  agencyLog_(session.email,agency?agency["Agency ID"]:"","COMMUNICATION_SENT","Targets: "+targets.join(",")+"; recipients: "+recipients.length+"; email: "+emailSent+"; SMS: "+smsSent);
+  return {status:"SUCCESS",recipientCount:recipients.length,emailSent:emailSent,smsSent:smsSent,failed:failed,whatsappLinks:whatsappLinks,message:"Communication processing completed. WhatsApp messages are provided as secure click-to-chat links and require a user to send them."};
+}
+
+function sendAgencyInfoOTP(nss) {
+  const key=String(nss||"").trim().toUpperCase();
+  const master=findMasterPersonnel_(key);
+  if(!master) return {status:"ERROR",message:"Personnel record was not found in the master list."};
+  const cache=CacheService.getScriptCache(), rateKey="AGENCY_INFO_OTP_RATE_"+key.replace(/[^A-Z0-9]/g,"");
+  if(cache.get(rateKey)) return {status:"ERROR",message:"A verification code was requested recently. Wait one minute before requesting another."};
+  const token=Utilities.getUuid().replace(/-/g,"");
+  const result=sendOTP_({nssNumber:key,purpose:"AGENCY_INFO",token:token,forceNew:true});
+  if(!result||result.status!=="SUCCESS") return result||{status:"ERROR",message:"Could not send verification code."};
+  cache.put(rateKey,"1",60);
+  return {status:"SUCCESS",token:result.token,message:"A verification code has been sent to the contact details recorded for this personnel."};
+}
+function confirmAgencyInfoOTP(token, otp) {
+  const verified=verifyOTP_(token,otp,"AGENCY_INFO");
+  if(!verified||verified.status!=="SUCCESS") return verified||{status:"ERROR",message:"Verification failed."};
+  const access=Utilities.getUuid().replace(/-/g,"")+Utilities.getUuid().replace(/-/g,"");
+  CacheService.getScriptCache().put("AGENCY_INFO_ACCESS_"+access,String(verified.nssNumber),1800);
+  return {status:"SUCCESS",accessToken:access,message:"Verification successful. Agency information access is available for 30 minutes."};
+}
+function getAgencyInfoWithAccess(accessToken) {
+  const access=String(accessToken||"").trim();
+  const nss=CacheService.getScriptCache().get("AGENCY_INFO_ACCESS_"+access);
+  if(!nss) throw new Error("Your agency information session has expired. Verify your identity again.");
+  const master=findMasterPersonnel_(nss);
+  if(!master) throw new Error("Personnel record is no longer available.");
+  const posting=String(master["Company Posted To"]||master["Place of Posting"]||"").trim();
+  if(!posting) return {status:"SUCCESS",agency:null,message:"No official posting destination is recorded for this personnel."};
+  const agency=agencyRows_("USER_AGENCIES").filter(function(a){return agencyNormalise_(a.Name)===agencyNormalise_(posting);})[0];
+  if(!agency) return {status:"SUCCESS",agency:null,message:"Your posting destination has not yet completed its agency profile."};
+  const assignment=agencyRows_("AGENCY_ASSIGNMENTS").filter(function(x){return String(x["NSS Number"]).toUpperCase()===String(nss).toUpperCase()&&String(x.Status).toUpperCase()==="ACTIVE";})[0];
+  const supervisor=assignment?agencyRows_("AGENCY_SUPERVISORS").filter(function(s){return String(s["Supervisor ID"])===String(assignment["Supervisor ID"])&&String(s["Agency ID"])===String(agency["Agency ID"]);})[0]:null;
+  const postedCount=getSheetObjects_("MASTER_PERSONNEL").filter(function(p){return agencyNormalise_(p["Company Posted To"]||p["Place of Posting"])===agencyNormalise_(posting);}).length;
+  const info=agencySafeProfile_(agency);info.postedCount=postedCount;
+  return {status:"SUCCESS",agency:info,supervisor:supervisor?{Name:supervisor.Name,Designation:supervisor.Designation,Phone:supervisor.Phone,WhatsApp:supervisor.WhatsApp,Email:supervisor.Email}:null};
 }

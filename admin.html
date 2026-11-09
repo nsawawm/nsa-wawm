@@ -2030,7 +2030,22 @@ function serverCallFailed(error) { adminError(error); }
 </aside>
 <div class="sidebar-overlay" onclick="closeAdminSidebar()" aria-hidden="true"></div>
 <script>
-function navigateAdmin(page, params) { hideLoader(); openPage(page, params || {}); }
+function navigateAdmin(page, params) {
+  hideLoader();
+  if (page === "agency-management" || page === "geospatial-monitoring") {
+    const shell=document.querySelector(".admin-content"), header=shell&&shell.querySelector(".app-header");
+    if(!shell)return openPage(page,params||{});
+    let frame=document.getElementById("adminEmbeddedModule");
+    if(!frame){frame=document.createElement("iframe");frame.id="adminEmbeddedModule";frame.title="Administration module";frame.style.cssText="display:block;width:100%;height:calc(100vh - 105px);min-height:760px;border:0;background:#f4f7f8;border-radius:12px";shell.appendChild(frame);}
+    Array.from(shell.children).forEach(el=>{if(el!==header&&el!==frame)el.style.display="none";});
+    frame.style.display="block";frame.src="./"+page+".html";frame.title=page==="agency-management"?"User Agencies":"Geospatial Personnel Monitoring";
+    document.querySelectorAll(".sidebar-menu [data-page]").forEach(b=>b.classList.toggle("active",b.dataset.page===page));
+    closeAdminSidebar();return;
+  }
+  const frame=document.getElementById("adminEmbeddedModule");if(frame)frame.style.display="none";
+  const shell=document.querySelector(".admin-content"),header=shell&&shell.querySelector(".app-header");if(shell)Array.from(shell.children).forEach(el=>{if(el!==header&&el!==frame)el.style.display="";});
+  openPage(page, params || {});
+}
 </script>
 <main class="admin-content">
 <header class="app-header">

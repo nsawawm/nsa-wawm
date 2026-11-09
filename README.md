@@ -1,4 +1,4 @@
-# NSA WAWM DRS Operational Upgrade v1.1
+# NSA WAWM DRS Complete Agency & Geospatial Upgrade v1.3
 
 This package extends the existing DRS application with integrated User Agency Management. Existing registration, OTP, personnel, batch, allowance, evaluation, certification, reporting, communications, and administrative modules are retained.
 
@@ -88,3 +88,32 @@ The integrated Leaflet module adds:
 - `DATE_REVIEW`: one or both service dates are unavailable or invalid.
 
 The map defaults to current active personnel. Historical and upcoming counts remain separately visible.
+
+
+## v1.3 complete agency data architecture and admin integration
+
+### Canonical agency and operational tables
+The additive setup now provisions the complete proposed table set: `USER_AGENCIES`, `AGENCY_CONTACTS`, `AGENCY_BRANCHES`, `AGENCY_SUPPORT`, `AGENCY_PHOTOS`, `AGENCY_REQUESTS`, `AGENCY_REQUEST_DETAILS`, `POSTING_RECORDS`, `POSTING_ACCEPTANCE`, `SUPERVISORS`, `SUPERVISOR_ASSIGNMENTS`, `SUPERVISOR_EVALUATIONS`, `AGENCY_INSPECTIONS`, `AGENCY_COMPLAINTS`, `AGENCY_COMMUNICATIONS`, `AGENCY_USERS`, and `AGENCY_AUDIT_LOG`. Additional operational tables include `AGENCY_BENEFITS_HISTORY`, `AGENCY_GEOLOCATION_HISTORY`, `PERSONNEL_REPORTING`, `PERSONNEL_ATTENDANCE`, `AGENCY_VISIT_EVIDENCE`, `AGENCY_ACTION_TRACKER`, `AGENCY_DOCUMENTS`, and `AGENCY_NOTIFICATION_LOG`.
+
+Legacy tables remain in place for compatibility (`AGENCY_SUPERVISORS`, `AGENCY_ASSIGNMENTS`, `AGENCY_AUDIT`, `MONITORING_VISITS`, `MONITORING_ACTIONS`, and `AGENCY_GEOLOCATION`). The setup routine adds missing sheets/headers and migrates existing supervisor, assignment and primary-head contact data into the canonical registers without deleting the legacy records.
+
+### Agency file import
+The User Agencies page accepts CSV and Excel `.xlsx`/`.xls` files. The first worksheet is read. Column mapping recognises Company Code, Name/Company Name, Branches, Region, District, Email, Phone Number, Address, GPS, Industry, Paying Status, Company Type, Company Ownership, Category, Status and Date Registered. Existing agencies are matched first by Company Code, then by normalised agency name. Non-empty uploaded values update matching records; blank values do not erase existing values. New agency accounts remain inactive pending Secretariat activation. Imports are limited to 5,000 rows per request and use a script lock to prevent concurrent write collisions.
+
+### Admin navigation
+The User Agencies and Geospatial Monitoring sidebar actions now open their pages inside the authenticated Admin shell using an embedded module frame. The normal admin header and sidebar remain available. The router also has explicit routes for both modules.
+
+### Important data-governance note
+`MASTER_PERSONNEL` remains the authoritative source for official posting destinations. The new canonical posting, acceptance, attendance, complaint, inspection and evaluation sheets provide the database structures for operational workflows. The existing live workflows continue to use the compatibility tables where applicable. Do not treat a blank canonical table as evidence that no historical event occurred; migrate or reconcile historical records before relying on those new registers for formal reporting. Acceptance must be recorded explicitly; registration alone must not be treated as proof that personnel reported to an agency.
+
+### Setup and deployment
+1. Back up the production spreadsheet and current Apps Script project.
+2. Replace `Code.gs` with this package version.
+3. Run `setupNSA_WAWM()` once under an authorised administrator account. It provisions missing tables and adds missing headers; it does not delete existing rows.
+4. Deploy a new Apps Script version and update the Cloudflare Worker source from `cloudflare-worker/worker.js` if the Worker copy differs.
+5. Publish the complete frontend and assets to the existing static hosting location.
+6. Sign in as ADMIN, open User Agencies inside the admin shell, and test CSV/XLSX import with a small file before importing the full agency register.
+7. Verify agency counts, duplicate handling, permissions, geolocation capture and monitoring records against the production spreadsheet before wider rollout.
+
+### Validation
+JavaScript syntax checks and ZIP integrity checks are run on the generated release. Live Google Sheets, Apps Script deployment, Worker secrets, external tile services and real user-role access cannot be verified from this build environment and must be tested in the deployment environment.

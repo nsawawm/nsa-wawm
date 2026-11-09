@@ -32,6 +32,7 @@ h2{font-size:18px;margin:0 0 14px}h3{font-size:15px;margin:0 0 10px}.muted{color
 <div id="loading" class="card">Checking access and loading agency records…</div>
 <section id="adminView" class="hidden">
  <div class="toolbar"><input id="search" placeholder="Search agency, code, district or contact" style="max-width:360px"><button onclick="loadAdmin()">Search</button><button class="secondary" onclick="syncMaster()">Sync new agencies from master personnel</button></div>
+ <div class="card"><h2>Import user agencies from file</h2><p class="muted">Upload CSV or Excel (.xlsx). Recognised columns include Company Code, Name, Branches, Region, District, Email, Phone Number, Address, GPS, Industry, Paying Status, Company Type, Company Ownership, Category, Status and Date Registered. Existing agencies are matched by Company Code, then name. Non-empty imported fields update the matched record; blank cells do not erase existing details. Account activation remains under Secretariat control.</p><div class="toolbar"><input type="file" id="agencyImportFile" accept=".csv,.xlsx,.xls" style="max-width:360px"><button type="button" onclick="previewAgencyImport()">Preview file</button><button type="button" onclick="runAgencyImport()">Import agencies</button></div><div id="agencyImportPreview" class="muted">No file selected.</div></div>
  <div class="stats"><div class="stat"><small>Agencies in view</small><strong id="statTotal">0</strong></div><div class="stat"><small>Active agency accounts</small><strong id="statActive">0</strong></div><div class="stat"><small>Personnel posted</small><strong id="statPosted">0</strong></div><div class="stat"><small>Personnel registered</small><strong id="statAccepted">0</strong></div></div>
  <div class="card"><h2>Agency register</h2><p class="muted">Agencies are discovered from official posting destinations in MASTER_PERSONNEL. The Secretariat completes profiles and activates agency accounts.</p><div class="table-wrap"><table><thead><tr><th>Company code / agency</th><th>Region / district</th><th>Posted</th><th>Registered</th><th>Account</th><th>Profile</th><th>Actions</th></tr></thead><tbody id="agencyRows"></tbody></table></div></div>
  <div class="card" id="editCard"><h2 id="editTitle">Complete agency profile</h2><input type="hidden" id="agencyId">
@@ -72,7 +73,7 @@ h2{font-size:18px;margin:0 0 14px}h3{font-size:15px;margin:0 0 10px}.muted{color
 <div class="card hidden" id="communicationTab"><h2>Communicate with agency contacts and personnel</h2><p class="muted">Select recipient groups and delivery channels. WhatsApp opens individual click-to-chat links; the sender must confirm each message.</p><div class="grid two"><div class="field wide"><label>Subject (email)</label><input id="commSubject" value="NSA WAWM Agency Notice"></div><div class="field wide"><label>Message</label><textarea id="commMessage" rows="5" placeholder="Write your notice or instruction…"></textarea></div></div><div style="display:flex;gap:16px;flex-wrap:wrap;margin:12px 0"><label><input type="checkbox" id="targetHead" checked style="width:auto"> Agency head/contact</label><label><input type="checkbox" id="targetSupervisors" style="width:auto"> Supervisors</label><label><input type="checkbox" id="targetPersonnel" style="width:auto"> Personnel</label></div><div style="display:flex;gap:16px;flex-wrap:wrap;margin:12px 0"><label><input type="checkbox" id="channelEmail" checked style="width:auto"> Email</label><label><input type="checkbox" id="channelSms" style="width:auto"> SMS</label><label><input type="checkbox" id="channelWhatsapp" style="width:auto"> WhatsApp links</label></div><button onclick="sendAgencyMessage()">Send / prepare communication</button><div id="whatsappLinks" style="margin-top:14px"></div></div>
 </section>
 </main>
-<script src="./assets/config.js"></script><script src="./assets/apps-script-bridge.js"></script>
+<script src="./assets/config.js"></script><script src="./assets/apps-script-bridge.js"></script><script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 const token=()=>sessionStorage.getItem("NSA_USER_SESSION")||"";
 let selectedAgency=null, portalData=null, batches=[];
@@ -81,6 +82,17 @@ function toast(msg,error){const t=$("toast");t.textContent=msg;t.className=error
 function call(method,args){return window.NSA_API.invoke(method,args||[])}
 function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function signOut(){sessionStorage.clear();location.href="./login.html"}
+let agencyImportRows=[];
+async function previewAgencyImport(){
+ const f=$("agencyImportFile").files[0];if(!f){toast("Choose a CSV or Excel file first.",true);return;}
+ try{let rows=[];const ext=f.name.split(".").pop().toLowerCase();
+  if(ext==="csv"){const text=await f.text();const lines=text.replace(/^\uFEFF/,"").split(/\r?\n/).filter(x=>x.trim());const parse=line=>{const out=[];let v="",q=false;for(let i=0;i<line.length;i++){const c=line[i];if(c==='"'&&line[i+1]==='"'&&q){v+='"';i++;}else if(c==='"')q=!q;else if(c===","&&!q){out.push(v);v="";}else v+=c;}out.push(v);return out;};const headers=parse(lines.shift()).map(x=>x.trim());rows=lines.map(line=>{const a=parse(line),o={};headers.forEach((h,i)=>o[h]=a[i]||"");return o;});}
+  else{if(!window.XLSX)throw new Error("Excel reader could not load. Try saving the file as CSV.");const data=await f.arrayBuffer(),wb=XLSX.read(data,{type:"array"});rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:""});}
+  if(!rows.length)throw new Error("No data rows found in the first worksheet.");agencyImportRows=rows;
+  const headers=Object.keys(rows[0]);$("agencyImportPreview").innerHTML=`<b>${rows.length.toLocaleString()} data rows detected.</b><br>Columns: ${headers.map(esc).join(", ")}<br>First agency: ${esc(rows[0].Name||rows[0]["Company Name"]||rows[0].name||"Check column mapping")}`;
+ }catch(e){agencyImportRows=[];toast(e.message,true)}
+}
+async function runAgencyImport(){if(!agencyImportRows.length){toast("Preview a valid file before importing.",true);return;}if(!confirm(`Import ${agencyImportRows.length} agency rows? Existing records will be updated by matching Company Code or agency name. Blank fields will not erase existing values.`))return;try{const r=await call("importUserAgencies",[agencyImportRows,token()]);toast(`Import complete. Added: ${r.added}; updated: ${r.updated}; skipped: ${r.skipped}.`);agencyImportRows=[];$("agencyImportFile").value="";$("agencyImportPreview").textContent="Import completed.";await loadAdmin();}catch(e){toast(e.message,true)}}
 async function boot(){
  try{
   const t=token();if(!t)throw new Error("Please sign in first.");

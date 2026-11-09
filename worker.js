@@ -194,7 +194,27 @@ const PUBLIC_INVOKE_METHODS = new Set([
 
   "resetSystemUserPassword",
 
-  "toggleUserStatus"
+  "toggleUserStatus",
+  "syncAgenciesFromMaster",
+  "getAgencyManagementData",
+  "saveAgencyProfile",
+  "activateAgencyAccount",
+  "getAgencyPortalData",
+  "saveAgencyPortalProfile",
+  "saveAgencySupervisor",
+  "assignAgencySupervisor",
+  "createAgencyPersonnelRequest",
+  "reviewAgencyPersonnelRequest",
+  "getAgencyInformationForPersonnel",
+  "sendAgencyCommunication",
+  "sendAgencyInfoOTP",
+  "confirmAgencyInfoOTP",
+  "getAgencyInfoWithAccess",
+  "getGeospatialDashboardData",
+  "saveAgencyGeolocation",
+  "saveMonitoringVisit",
+  "getAgencyMonitoringHistory",
+  "getGeospatialFilterOptions"
 
 ]);
 
@@ -487,7 +507,7 @@ export default {
         );
       }
       body = JSON.parse(rawBody);
-    } catch (\_) {
+    } catch (_) {
 
       return jsonResponse(
 
@@ -711,7 +731,7 @@ export default {
 
         result = JSON.parse(responseText);
 
-      } catch (\_) {
+      } catch (_) {
 
         return jsonResponse(
 
@@ -769,7 +789,7 @@ export default {
 
       );
 
-    } catch (\_) {
+    } catch (_) {
 
 // Do not expose internal URLs, secrets or stack traces.
 
