@@ -45,7 +45,24 @@
       if (year && data.year) year.value = String(data.year);
     }
     if (typeof notify === "function") {
-      notify("QR code read. Confirm the personnel number and service, then select CONTINUE.", "success");
+      notify("QR code read successfully. Starting the selected service...", "success");
     }
+
+    // Registration QR scans follow exactly the same verification and OTP
+    // sequence as manual NSS entry followed by CONTINUE. Do not stop at
+    // pre-filling the NSS field or require a second confirmation click.
+    if (type === "registration" || !type) {
+      if (typeof continuePortal === "function") {
+        window.setTimeout(function () {
+          continuePortal();
+        }, 150);
+      } else if (typeof notify === "function") {
+        notify("The registration workflow could not be started. Refresh Home and scan again.", "error");
+      }
+      return;
+    }
+
+    // Monthly and annual QR codes retain the existing explicit service
+    // selection and CONTINUE workflow, including their period parameters.
   };
 })();

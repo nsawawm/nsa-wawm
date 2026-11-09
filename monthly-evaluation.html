@@ -655,7 +655,17 @@
         validateCaptureCode();
 
         if (state.captureCodeSource === "ocr" && /^[A-Z0-9]{6}$/.test(state.captureCode)) {
-          setMessage("Office capture code detected. Review the code, then confirm submission.", "success");
+          setMessage("Office capture code detected. Submitting the monthly evaluation automatically…", "success");
+          // Auto-submit only after the server has confirmed eligibility,
+          // the session is valid, and the capture code has passed validation.
+          // The submitEvaluation lock prevents duplicate submissions.
+          if (state.precheck.canSubmit && !state.locked) {
+            window.setTimeout(function () {
+              if (!state.locked && validateCaptureCode() && state.precheck && state.precheck.canSubmit) {
+                submitEvaluation();
+              }
+            }, 250);
+          }
         }
       } catch (error) {
         setStatus("Unable to continue.", "error", error && error.message ? error.message : "Evaluation validation failed.");

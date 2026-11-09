@@ -1,4 +1,4 @@
-# NSA WAWM DRS Complete Agency & Geospatial Upgrade v1.3
+# NSA WAWM DRS Complete Agency & Geospatial Upgrade v1.3.1
 
 This package extends the existing DRS application with integrated User Agency Management. Existing registration, OTP, personnel, batch, allowance, evaluation, certification, reporting, communications, and administrative modules are retained.
 
@@ -117,3 +117,15 @@ The User Agencies and Geospatial Monitoring sidebar actions now open their pages
 
 ### Validation
 JavaScript syntax checks and ZIP integrity checks are run on the generated release. Live Google Sheets, Apps Script deployment, Worker secrets, external tile services and real user-role access cannot be verified from this build environment and must be tested in the deployment environment.
+
+
+## v1.3.1 scanner and submission corrections
+
+- Registration QR scans now invoke the existing `continuePortal()` registration route automatically. This reuses the established server-side personnel lookup, registration-session creation, OTP dispatch and OTP-page redirect. The NSS field is no longer left waiting for a second CONTINUE click after a registration QR scan.
+- QR scanning prefers the rear camera, requests higher camera resolution where supported, scans more frequently, uses a larger target area, and limits decoding to QR codes.
+- Monthly capture-code OCR now returns to the monthly evaluation page and automatically submits after the server-side eligibility precheck succeeds. The existing capture-code validation, duplicate checks, late-approval checks, session checks and submission lock remain in force.
+- Added the updated GitHub Pages camera source under `camera-test/index.html`, with deployment instructions in `camera-test/README.md`.
+
+### Camera deployment requirement
+
+The DRS ZIP cannot itself publish files to the separate GitHub Pages camera repository. After replacing the DRS files, also publish the supplied `camera-test/index.html` to the existing `https://nsawawm.github.io/camera-test/` deployment. See `camera-test/README.md`.
