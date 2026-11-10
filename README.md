@@ -1,4 +1,4 @@
-# NSA WAWM DRS v1.3.2
+# NSA WAWM DRS v1.3.3
 
 This package retains the existing NSA WAWM DRS v1.3 application and adds corrections to QR routing and monthly office capture-code handoff.
 
@@ -32,3 +32,9 @@ Actual camera resolution, autofocus, exposure controls and torch availability de
 4. Dense QR: scan a dense/high-version QR under good light. Confirm the scanner recognises the complete payload.
 5. Monthly capture code: open SCAN CODE, read a valid six-character code and select USE THIS CODE. Confirm the camera closes, the code reaches the monthly evaluation page and the existing submission request starts automatically.
 6. Failed submission: use an invalid/expired code or a non-eligible evaluation. Confirm the page displays the server error and does not report success.
+
+
+## v1.3.3 QR reliability update
+- Added parsing for malformed relative QR payloads such as `undefined/home/verification?...`; NSS number, service type, month, year and identifier are extracted without navigating to the malformed URL.
+- Added a parallel native BarcodeDetector scan against the live high-resolution camera frame where the browser supports it. The existing html5-qrcode scanner remains the fallback.
+- Increased the QR scan region to 97% of the available viewfinder and improved scan feedback.
