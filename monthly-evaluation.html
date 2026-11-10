@@ -689,26 +689,43 @@
       $("captureCode").focus();
     });
 
-    function buildReturnUrl() {
-      const returnUrl = new URL(window.location.href);
-      returnUrl.searchParams.delete("captureCode");
-      returnUrl.searchParams.delete("captureCodeSource");
-      returnUrl.searchParams.set("page", "monthly-evaluation");
-      returnUrl.searchParams.set("nssNumber", state.nss);
-      returnUrl.searchParams.set("month", state.month);
-      returnUrl.searchParams.set("year", state.year);
-      if (state.identifier) returnUrl.searchParams.set("identifier", state.identifier);
-      if (state.updateExisting) returnUrl.searchParams.set("updateExisting", "1");
-      else returnUrl.searchParams.delete("updateExisting");
-      return returnUrl.toString();
-    }
+    let captureCodeWindow = null;
+
+    // The camera is a popup so it can return the six-character code directly
+    // to this page. This avoids hard-coded Apps Script hostname validation and
+    // works whether the portal is served through Apps Script or its web host.
+    window.addEventListener("message", function (event) {
+      if (event.origin !== "https://nsawawm.github.io") return;
+      if (!captureCodeWindow || event.source !== captureCodeWindow) return;
+      const message = event.data;
+      if (!message || message.type !== "NSA_CAPTURE_CODE") return;
+
+      const code = String(message.code || "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+      captureCodeWindow = null;
+      if (!/^[A-Z0-9]{6}$/.test(code)) {
+        setMessage("The scanner returned an invalid capture code. Please scan again.", "error");
+        return;
+      }
+      if (state.locked) return;
+      $("captureCode").value = code;
+      validateCaptureCode();
+      setMessage("Office capture code received. Submitting the monthly evaluation…", "success");
+      submitEvaluation();
+    });
 
     $("scanCodeButton").addEventListener("click", function () {
       try {
         validatePeriod();
         const camera = new URL(NSA_EVALUATION_CONFIG.cameraUrl);
-        camera.searchParams.set("returnUrl", buildReturnUrl());
-        window.location.assign(camera.toString());
+        camera.searchParams.set("mode", "capture-code");
+        camera.searchParams.delete("returnUrl");
+        captureCodeWindow = window.open(camera.toString(), "nsaCaptureCodeScanner", "popup=yes,width=520,height=760,resizable=yes,scrollbars=yes");
+        if (!captureCodeWindow) {
+          captureCodeWindow = null;
+          setMessage("The scanner popup was blocked. Allow pop-ups for the NSA WAWM portal and select SCAN CODE again.", "error");
+          return;
+        }
+        captureCodeWindow.focus();
       } catch (error) {
         setMessage(error && error.message ? error.message : "Unable to open the camera.", "error");
       }

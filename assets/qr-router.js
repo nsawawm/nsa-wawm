@@ -45,7 +45,19 @@
       if (year && data.year) year.value = String(data.year);
     }
     if (typeof notify === "function") {
-      notify("QR code read. Confirm the personnel number and service, then select CONTINUE.", "success");
+      notify("QR code recognised. Proceeding with the selected service…", "success");
     }
+
+    // Run the same handler used by the CONTINUE button. This preserves the
+    // existing registration OTP and monthly/annual evaluation prechecks.
+    window.setTimeout(function () {
+      if (typeof window.continuePortal === "function") {
+        window.continuePortal();
+      } else {
+        if (typeof notify === "function") {
+          notify("The QR code was read, but the portal could not start the next step. Please refresh and try again.", "error");
+        }
+      }
+    }, 0);
   };
 })();

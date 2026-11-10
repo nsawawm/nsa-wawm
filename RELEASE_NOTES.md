@@ -1,10 +1,18 @@
-# NSA WAWM DRS v1.3 Release Notes
+# Release Notes: NSA WAWM DRS v1.3.2
 
-- Added all 17 requested canonical agency-management sheets and 8 supporting operational tables.
-- Added additive migration of legacy agency head contacts, supervisors and supervisor assignments.
-- Added locked CSV/XLSX agency register import with Company Code/name matching and non-destructive blank-cell handling.
-- Fixed User Agencies and Geospatial Monitoring sidebar navigation so each module opens inside the Admin interface shell.
-- Added explicit router entries for both modules.
-- Preserved existing DRS pages, legacy agency sheets and official posting authority in MASTER_PERSONNEL.
+## Corrected
+- Home-page QR scans no longer stop at NSS field population. They now invoke the established manual CONTINUE workflow.
+- Monthly capture-code scanner no longer validates a same-tab return URL against a hard-coded Apps Script host list. It returns the code to the opener window.
+- Monthly evaluation automatically initiates the existing submission function after receiving a valid code from the camera popup.
+- QR camera requests higher resolution and continuous autofocus/exposure controls where supported, with a larger decoding area for dense QR codes.
 
-This release provisions the full data architecture. Some newly provisioned operational registers are schema-ready and require further workflow rollout/data reconciliation before being used as the sole source for formal reporting.
+## Preserved
+- Existing Apps Script backend and API calls.
+- Existing registration OTP sequence.
+- Existing monthly and annual evaluation eligibility prechecks.
+- Existing duplicate-submission handling and late-approval controls.
+- Existing passport camera and six-character OCR capture workflow.
+- Existing agency, geospatial, personnel, reporting and administration modules.
+
+## Deployment note
+The updated camera source is included at `camera-test/index.html`. It must be deployed to the existing GitHub Pages camera repository as well as deploying the DRS package.
